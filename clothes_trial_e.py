@@ -12,7 +12,7 @@ os.environ['DASHBOARD_API_KEY'] = 'can not tell you(doge)'
 os.environ['MODEL_TYPE'] = 'qwen'
 
 
-os.environ['OPENWEATHER_API_KEY'] = '7e006d9b6049e2cb983a408bd1db3374'  # ⚠️ 替换为你的真实天气API key
+os.environ['OPENWEATHER_API_KEY'] = 'hidden'  # ⚠️ 替换为你的真实天气API key
 
 # print("🔑 当前设置的API密钥:")
 # print(f"天气API: {os.environ.get('OPENWEATHER_API_KEY', '未设置')}")
