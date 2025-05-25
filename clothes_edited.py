@@ -277,7 +277,7 @@ class InteractiveFashionAssistant:
 - 其他想法和建议？"""
         
         # 检测调整需求
-        elif any(word in user_input for word in ['调整', '换', '改', '不喜欢', '其他']):
+        elif any(word in user_input for word in ['调整', '换', '改', '不喜欢', '其他', '更多', '选择']):
             session.state = SessionState.REFINEMENT
             return self.handle_refinement_request(session, user_input)
         
@@ -288,10 +288,10 @@ class InteractiveFashionAssistant:
         else:
             return """我明白你的想法！你可以：
 
-🔢 **选择方案**：输入"选择1"或"我要方案2"
-🔄 **调整方案**：比如"方案1换个颜色"、"有没有更休闲的？"
-❓ **询问详情**：比如"方案2什么颜色？"、"这样穿会不会热？"
-💭 **其他需求**：直接告诉我你的想法
+🔢 选择方案：输入"选择1"或"我要方案2"
+🔄 调整方案：比如"方案1换个颜色"、"有没有更休闲的？"
+❓ 询问详情：比如"方案2什么颜色？"、"这样穿会不会热？"
+💭 其他需求：直接告诉我你的想法（如果是问题记得加上？哦qwq）
 
 请告诉我您的选择或需求～"""
     
@@ -479,7 +479,7 @@ class InteractiveFashionAssistant:
         historical_prefs = self.get_user_preferences(session.user_id)
         
         prompt = f"""
-作为专业时尚顾问，基于以下信息为用户提供个性化穿搭建议：
+作为专业时尚顾问，基于以下信息为用户提供3套方案作为个性化穿搭建议，供用户选择：
 
 【用户画像】
 - 基本信息：{profile['age']}岁{profile['gender']}性
@@ -514,10 +514,18 @@ class InteractiveFashionAssistant:
 💡 理由：[详细说明适合的原因]
 
 方案2：[风格名称]
-...
+👕 上衣：[具体描述]
+👖 下装：[具体描述]  
+🧥 外套：[具体描述或"无需外套"]
+👟 鞋履：[具体描述]
+💡 理由：[详细说明适合的原因]
 
 方案3：[风格名称]
-...
+👕 上衣：[具体描述]
+👖 下装：[具体描述]  
+🧥 外套：[具体描述或"无需外套"]
+👟 鞋履：[具体描述]
+💡 理由：[详细说明适合的原因]
 """
         return prompt
     
