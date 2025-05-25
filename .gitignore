@@ -1,0 +1,13 @@
+# 通用Python项目忽略规则
+.env
+*.pyc
+__pycache__/
+venv/
+.vscode/
+.idea/
+
+# 其他敏感文件
+config.json
+secrets/
+*.key
+*.pem
