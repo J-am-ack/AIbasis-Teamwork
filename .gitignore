@@ -6,6 +6,8 @@ venv/
 .vscode/
 .idea/
 
+*.db
+
 # 其他敏感文件
 config.json
 secrets/
