@@ -7,12 +7,12 @@ import json
 
 # 直接在代码中设置API密钥（请替换为你的真实密钥）
 os.environ['OPENAI_API_KEY'] = 'your-openai-key-here'  # ⚠️ 替换为你的真实OpenAI API key
-os.environ['DASHBOARD_API_KEY'] = 'can not tell you(doge)'
+os.environ['DASHBOARD_API_KEY'] = 'sk-f86f14554675473d86bf1e8f1228b29b'
 
 os.environ['MODEL_TYPE'] = 'qwen'
 
 
-os.environ['OPENWEATHER_API_KEY'] = 'hidden'  # ⚠️ 替换为你的真实天气API key
+os.environ['OPENWEATHER_API_KEY'] = '7e006d9b6049e2cb983a408bd1db3374'  # ⚠️ 替换为你的真实天气API key
 
 # print("🔑 当前设置的API密钥:")
 # print(f"天气API: {os.environ.get('OPENWEATHER_API_KEY', '未设置')}")
