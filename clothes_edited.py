@@ -472,14 +472,40 @@ class InteractiveFashionAssistant:
             print(f"Weather API error: {e}")
             return {"temp": 20, "humidity": 50, "conditions": "未知天气"}
     
+    # def generate_smart_recommendations(self, session: UserSession) -> List[Dict]:
+    #     """生成智能推荐"""
+    #     prompt = self.build_smart_prompt(session)
+    #     model_type = os.getenv('MODEL_TYPE', 'qwen')
+    #     api_key = os.getenv('DASHBOARD_API_KEY')
+        
+    #     recommendations_text = self.generate_recommendation(prompt, model_type, api_key)
+    #     return self.parse_recommendations(recommendations_text)
+    
+    
     def generate_smart_recommendations(self, session: UserSession) -> List[Dict]:
-        """生成智能推荐"""
+        """生成智能推荐 - 增加调试功能"""
         prompt = self.build_smart_prompt(session)
         model_type = os.getenv('MODEL_TYPE', 'qwen')
         api_key = os.getenv('DASHBOARD_API_KEY')
         
         recommendations_text = self.generate_recommendation(prompt, model_type, api_key)
-        return self.parse_recommendations(recommendations_text)
+        
+        # # 调试：打印原始返回文本
+        # print("-"*50)
+        # print("🔍 AI返回的原始文本：")
+        # print(recommendations_text)
+        # print("-"*50)
+        
+        parsed_results = self.parse_recommendations(recommendations_text)
+        # print(f"📊 解析结果：{len(parsed_results)} 个方案")
+        
+        
+        # 解析不出来，其实格式完全无需解析感觉直接输出即可
+        
+        # 后续或许再调整
+        
+        
+        return parsed_results
     
     def build_smart_prompt(self, session: UserSession) -> str:
         """构建智能提示词"""
@@ -491,11 +517,11 @@ class InteractiveFashionAssistant:
         historical_prefs = self.get_user_preferences(session.user_id)
         
         prompt = f"""
-作为专业时尚顾问，基于以下信息为用户提供3套方案作为个性化穿搭建议，供用户选择：
+作为年轻人的专业穿搭顾问，基于以下信息为用户提供3套方案作为个性化穿搭建议，供用户选择：
 
 【用户画像】
 - 基本信息：{profile['age']}岁{profile['gender']}性
-- 职业：{profile.get('occupation', '未知')}
+- 职业：{profile.get('occupation')}
 - 风格偏好：{profile['style_pref']}
 - 所在城市：{profile['city']}
 
@@ -635,7 +661,7 @@ class InteractiveFashionAssistant:
         
         for line in lines:
             line = line.strip()
-            if re.match(r'方案\d+[：:]', line):
+            if re.search(r'方案\d+[：:]', line):
                 if current_option:
                     options.append(current_option)
                 current_option = {}
@@ -658,6 +684,163 @@ class InteractiveFashionAssistant:
             options.append(current_option)
         
         return options[:3]
+    
+    
+
+#  def parse_recommendations(text: str) -> List[Dict]:
+#     """解析推荐文本 - 修复版本"""
+#     options = []
+#     lines = text.strip().split('\n')
+#     current_option = {}
+    
+#     for line in lines:
+#         line = line.strip()
+#         if not line or line.startswith('---'):  # 跳过空行和分隔线
+#             continue
+        
+#         # 检测新方案的开始 - 支持多种格式
+#         # 支持: ### 方案1：, 🎉 方案1：, 方案1：等格式
+#         if (re.match(r'#+\s*方案\s*\d+[：:]', line) or 
+#             re.match(r'🎉\s*方案\s*\d+[：:]', line) or 
+#             re.match(r'方案\s*\d+[：:]', line)):
+#             # 如果当前有正在处理的方案，先保存它
+#             if current_option and any(current_option.values()):
+#                 options.append(current_option)
+            
+#             # 开始新方案
+#             current_option = {}
+#             # 提取风格名称 - 支持多种格式
+#             style_patterns = [
+#                 r'🎉\s*方案\s*\d+[：:]\s*([^\n]+)',  # 🎉 方案1：休闲简约风
+#                 r'#+\s*方案\s*\d+[：:]\s*\*?\*?([^*\n]+)\*?\*?',  # ### 方案1：**休闲学院风**
+#                 r'方案\s*\d+[：:]\s*([^\n]+)'  # 方案1：休闲简约风
+#             ]
+            
+#             style_name = None
+#             for pattern in style_patterns:
+#                 style_match = re.search(pattern, line)
+#                 if style_match:
+#                     style_name = style_match.group(1).strip()
+#                     break
+            
+#             if style_name:
+#                 current_option['style_name'] = style_name
+        
+#         # 解析各个组件 - 改进内容提取
+#         elif '👕' in line or '上衣' in line:
+#             content = extract_content_after_colon(line)
+#             if content:
+#                 current_option['top'] = content
+        
+#         elif '👖' in line or '下装' in line or '裤子' in line:
+#             content = extract_content_after_colon(line)
+#             if content:
+#                 current_option['bottom'] = content
+        
+#         elif '🧥' in line or '外套' in line:
+#             content = extract_content_after_colon(line)
+#             if content:
+#                 current_option['coat'] = content
+        
+#         elif '👟' in line or '鞋履' in line or '鞋子' in line:
+#             content = extract_content_after_colon(line)
+#             if content:
+#                 current_option['shoes'] = content
+        
+#         elif '💡' in line or '理由' in line or '推荐理由' in line:
+#             content = extract_content_after_colon(line)
+#             if content:
+#                 current_option['reason'] = content
+    
+#     # 添加最后一个方案
+#     if current_option and any(current_option.values()):
+#         options.append(current_option)
+    
+#     # 如果解析失败，尝试备用解析方法
+#     if len(options) == 0:
+#         options = fallback_parse(text)
+    
+#     # 确保至少有基本信息的方案才被包含
+#     valid_options = []
+#     for option in options:
+#         if option.get('top') or option.get('bottom') or option.get('style_name'):
+#             # 填充缺失的字段
+#             option.setdefault('top', '未指定上衣')
+#             option.setdefault('bottom', '未指定下装')
+#             option.setdefault('coat', '无需外套')
+#             option.setdefault('shoes', '未指定鞋履')
+#             option.setdefault('reason', '经典搭配')
+#             option.setdefault('style_name', f'方案{len(valid_options)+1}')
+#             valid_options.append(option)
+    
+#     print(f"解析结果：共找到 {len(valid_options)} 个方案")
+#     return valid_options[:3]
+
+# def extract_content_after_colon(line: str) -> str:
+#     """提取冒号后的内容 - 改进版本"""
+#     # 处理多种冒号格式：中文冒号、英文冒号、**加粗**等
+#     patterns = [
+#         r'[：:]\s*\*?\*?([^*\n]+?)\*?\*?(?:\s*（[^）]*）)?',  # 匹配冒号后内容，忽略括号注释
+#         r'[：:]\s*([^（\n]+)',  # 简单匹配冒号后到括号前的内容
+#         r'^\s*[👕👖🧥👟💡🎉]\s*\*?\*?([^：:*\n]+)',  # emoji后直接跟内容的情况
+#         r'[：:]\s*(.+)
+
+# def fallback_parse(text: str) -> List[Dict]:
+#     """备用解析方法 - 处理格式不规范的情况"""
+#     options = []
+    
+#     # 按方案分割文本 - 支持多种格式
+#     sections = re.split(r'#+\s*方案\s*\d+[：:]|🎉\s*方案\s*\d+[：:]|方案\s*\d+[：:]', text)
+    
+#     for i, section in enumerate(sections[1:], 1):  # 跳过第一个空段
+#         if not section.strip():
+#             continue
+            
+#         option = {}
+#         lines = section.strip().split('\n')
+        
+#         # 提取风格名称（第一行通常包含风格）
+#         if lines:
+#             first_line = lines[0].strip()
+#             # 移除可能的星号和其他标记
+#             style_name = re.sub(r'\*+|#+', '', first_line).strip()
+#             if style_name and not any(keyword in style_name for keyword in ['上衣', '下装', '外套', '鞋履', '理由']):
+#                 option['style_name'] = style_name
+        
+#         # 解析每一行寻找服装信息
+#         for line in lines:
+#             line = line.strip()
+#             if '上衣' in line or '👕' in line:
+#                 content = self.extract_content_after_colon(line)
+#                 if content:
+#                     option['top'] = content
+#             elif '下装' in line or '👖' in line:
+#                 content = self.extract_content_after_colon(line)
+#                 if content:
+#                     option['bottom'] = content
+#             elif '外套' in line or '🧥' in line:
+#                 content = self.extract_content_after_colon(line)
+#                 if content:
+#                     option['coat'] = content
+#             elif '鞋履' in line or '👟' in line:
+#                 content = self.extract_content_after_colon(line)
+#                 if content:
+#                     option['shoes'] = content
+#             elif '理由' in line or '💡' in line:
+#                 content = self.extract_content_after_colon(line)
+#                 if content:
+#                     option['reason'] = content
+        
+#         if option:
+#             options.append(option)
+    
+#     return options
+
+
+    
+
+
+    
     
     def save_user_profile(self, user_id: str, profile: Dict):
         """保存用户信息"""
