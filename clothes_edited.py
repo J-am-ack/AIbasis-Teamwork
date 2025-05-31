@@ -15,6 +15,9 @@ load_dotenv()
 
 # print(f"模型类型: {os.environ.get('MODEL_TYPE', '未设置')}")
 
+
+# wrongtime = 0
+
 class SessionState(Enum):
     """会话状态枚举"""
     INIT = "初始化"
@@ -60,6 +63,7 @@ class InteractiveFashionAssistant:
     def __init__(self):
         self.sessions = {}
         self.conn, self.cursor = self.init_database()
+        self.wrongtime = 0  # 初始化 wrongtime 变量
         
     def init_database(self):
         """初始化数据库"""
@@ -155,7 +159,7 @@ class InteractiveFashionAssistant:
 
 
 
-你可以一次性直接告诉我，也可以一个一个回答～"""
+你可以一次性直接全部告诉我，也可以一个一个回答～"""
         else:
             session.state = SessionState.WEATHER_CONFIRM
             session.context['user_profile'] = {
@@ -188,7 +192,7 @@ class InteractiveFashionAssistant:
         session.context['user_profile'].update(profile)
         
         # 检查是否收集了足够信息
-        required_fields = ['age', 'gender', 'city', 'style_pref']
+        required_fields = ['age', 'gender', 'city', 'style_pref' , 'occupation']
         missing_fields = [field for field in required_fields if field not in session.context['user_profile']]
         
         if missing_fields:
@@ -196,7 +200,8 @@ class InteractiveFashionAssistant:
                 'age': '年龄',
                 'gender': '性别',
                 'city': '所在城市',
-                'style_pref': '穿搭风格偏好'
+                'style_pref': '穿搭风格偏好',
+                'occupation': '职业'
             }
             return f"好的，我已经记录了你的信息！\n\n还需要补充：{', '.join([missing_text[field] for field in missing_fields])}"
         else:
@@ -240,7 +245,7 @@ class InteractiveFashionAssistant:
             response += f"💡 推荐理由：{option.get('reason', '经典搭配')}\n\n"
         
         response += """你可以：
-🔢 输入数字选择方案（如：选择1）
+🔢 输入具体要选择方案（如：选择1）
 ❓ 询问某个方案的详细信息（如：方案1的颜色搭配？）
 🔄 要求调整某个方案（如：方案2能换个颜色吗？）
 ⭐ 直接告诉我你的想法和需求"""
@@ -249,6 +254,7 @@ class InteractiveFashionAssistant:
     
     def handle_recommendation_feedback(self, session: UserSession, user_input: str) -> str:
         """处理推荐反馈"""
+        # global wrongtime
         user_input_lower = user_input.lower().strip()
         
         # 检测选择意图
@@ -285,15 +291,21 @@ class InteractiveFashionAssistant:
         elif '?' in user_input or '？' in user_input:
             return self.answer_detail_question(session, user_input)
         
-        else:
-            return """我明白你的想法！你可以：
+        elif self.wrongtime == 0:
+            self.wrongtime +=1
+            return """小北没有get到你的想法ww/(ㄒoㄒ)/~~，你可以：
 
 🔢 选择方案：输入"选择1"或"我要方案2"
 🔄 调整方案：比如"方案1换个颜色"、"有没有更休闲的？"
 ❓ 询问详情：比如"方案2什么颜色？"、"这样穿会不会热？"
-💭 其他需求：直接告诉我你的想法（如果是问题记得加上？哦qwq）
+💭 其他需求：直接告诉我你的想法（如果是提问题记得加上'？'哦qwq）
 
 请告诉我您的选择或需求～"""
+        else:
+            # global wrongtime
+            # self.wrongtime +=1
+            
+            return self.generate_conversational_response(session, user_input)
     
     def handle_feedback_collection(self, session: UserSession, user_input: str) -> str:
         """处理反馈收集"""
@@ -757,7 +769,7 @@ class InteractiveFashionAssistant:
         """分析用户的调整请求"""
         request_lower = request.lower()
         
-        if any(word in request for word in ['颜色', '色彩', '亮', '暗', '深', '浅']):
+        if any(word in request for word in ['颜色', '色彩', '亮', '暗', '深', '浅', '白', '黑', '撞色', '刺眼', '红', '绿','交叉色', '纯色']):
             return "调整颜色搭配"
         elif any(word in request for word in ['风格', '休闲', '商务', '正式', '潮流']):
             return "调整穿搭风格"
@@ -1009,7 +1021,7 @@ class InteractiveFashionAssistant:
         """生成对话式回应"""
         # 构建对话提示词
         conversation_prompt = f"""
-作为专业穿搭顾问，请回答用户的问题：
+作为年轻人的专业穿搭顾问，请回答用户的问题：
 
 【用户问题】
 {user_input}
@@ -1103,16 +1115,16 @@ class FashionCLI:
                     break
                 elif user_input.lower() in ['restart', '重新开始']:
                     self.assistant.reset_session(self.current_user)
-                    print("\n🔄 会话已重置，让我们重新开始！")
+                    print("\n🔄 会话已重置，让我们重新开始！输入OK和小北聊天哇~")
                     continue
                 elif user_input.lower() in ['help', '帮助']:
                     self.show_help()
                     continue
                 
                 # 处理用户输入
-                # print("\n🤖 AI助手正在思考...")
+                print("\n🤖 小北正在思考...")
                 response = self.assistant.process_user_input(self.current_user, user_input)
-                print(f"\n🤖 AI助手: {response}")
+                print(f"\n🤖 小北: {response}")
                 
             except KeyboardInterrupt:
                 print("\n\n👋 感谢你陪小北聊天，再见！")
