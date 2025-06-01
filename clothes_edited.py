@@ -8,6 +8,8 @@ import re
 from typing import List, Dict, Any, Optional
 from enum import Enum
 
+import college_search
+
 
 # 用env文件实现了安全的api_key管理
 from dotenv import load_dotenv
@@ -60,10 +62,15 @@ class UserSession:
 class InteractiveFashionAssistant:
     """交互式穿搭助手"""
     
-    def __init__(self):
+    def __init__(self,db_path: str = "clothing_db.sqlite"):
         self.sessions = {}
         self.conn, self.cursor = self.init_database()
         self.wrongtime = 0  # 初始化 wrongtime 变量
+        
+        
+        # 初始化院衫查询和匹配器
+        self.db_query = college_search.ClothingDBQuery(db_path)
+        self.clothing_matcher = college_search.ClothingMatcher(self.db_query)
         
     def init_database(self):
         """初始化数据库"""
@@ -242,7 +249,7 @@ class InteractiveFashionAssistant:
         session.current_recommendations = recommendations
         session.state = SessionState.RECOMMENDATION_SHOWN
         
-        response = "🎯 为你精心挑选了3套穿搭方案：\n\n"
+        response = "🎯  在院衫之外， 小北还为你精心挑选了几套穿搭方案哦：\n\n"
         
         for i, option in enumerate(recommendations, 1):
             response += f"**方案 {i}：{option.get('style_name', f'搭配{i}')}**\n"
@@ -253,10 +260,11 @@ class InteractiveFashionAssistant:
             response += f"💡 推荐理由：{option.get('reason', '经典搭配')}\n\n"
         
         response += """你可以：
+👕 拒绝纠结，直接穿上最心爱的院衫！（如：就穿院衫啦~）
 🔢 输入具体要选择方案（如：选择1）
 ❓ 询问某个方案的详细信息（如：方案1的颜色搭配？）
 🔄 要求调整某个方案（如：方案2能换个颜色吗？）
-⭐ 直接告诉我你的想法和需求"""
+   直接告诉我你的想法和需求"""
         
         return response
     
@@ -264,6 +272,11 @@ class InteractiveFashionAssistant:
         """处理推荐反馈"""
         # global wrongtime
         user_input_lower = user_input.lower().strip()
+        
+        
+        # 院衫直接选
+        
+        
         
         # 检测选择意图
         selection_match = re.search(r'选择?(\d+)|方案(\d+)', user_input)
@@ -315,37 +328,210 @@ class InteractiveFashionAssistant:
             
             return self.generate_conversational_response(session, user_input)
     
+    def handle_recommendation_feedback(self, session: UserSession, user_input: str) -> str:
+        """处理推荐反馈"""
+        user_input_lower = user_input.lower().strip()
+        
+        # 检测直接选院衫的情况
+        if any(word in user_input_lower for word in ['院衫', '选院衫', '直接选院衫', '要院衫']):
+            # 设置院衫为选中项
+            session.selected_option = 'yuanshan'  # 或者使用特殊标识
+            session.state = SessionState.FEEDBACK_COLLECTION
+            
+            return f"""👕 你选择了院衫！
+            
+    经典的院衫搭配，简约又有纪念意义～
+
+    这套搭配满意吗？请给个评分吧：
+    ⭐⭐⭐⭐⭐ (1-5分)
+
+    也可以告诉我：
+    - 哪些地方特别喜欢？
+    - 有什么需要调整的？
+    - 其他想法和建议？"""
+        
+        # 检测选择意图（原有逻辑）
+        selection_match = re.search(r'选择?(\d+)|方案(\d+)', user_input)
+        if selection_match:
+            selected_num = int(selection_match.group(1) or selection_match.group(2))
+            if 1 <= selected_num <= len(session.current_recommendations):
+                session.selected_option = selected_num - 1
+                session.state = SessionState.FEEDBACK_COLLECTION
+                
+                selected = session.current_recommendations[session.selected_option]
+                return f"""👍 你选择了方案{selected_num}：{selected.get('style_name', f'搭配{selected_num}')}
+
+    完整搭配：
+    👕 {selected.get('top')}
+    👖 {selected.get('bottom')}
+    🧥 {selected.get('coat')}
+    👟 {selected.get('shoes')}
+
+    这套搭配满意吗？请给个评分吧：
+    ⭐⭐⭐⭐⭐ (1-5分)
+
+    也可以告诉我：
+    - 哪些地方特别喜欢？
+    - 有什么需要调整的？
+    - 其他想法和建议？"""
+        
+        # 检测评分和反馈（当用户已经选择了某个方案后）
+        if session.selected_option is not None:
+            return self.handle_feedback_collection(session, user_input)
+        
+        # 检测调整需求
+        elif any(word in user_input for word in ['调整', '换', '改', '不喜欢', '其他', '更多', '选择']):
+            session.state = SessionState.REFINEMENT
+            return self.handle_refinement_request(session, user_input)
+        
+        # 检测询问详情
+        elif '?' in user_input or '？' in user_input:
+            return self.answer_detail_question(session, user_input)
+        
+        elif self.wrongtime == 0:
+            self.wrongtime += 1
+            return """小北没有get到你的想法ww/(ㄒoㄒ)/~~，你可以：
+
+    🔢 选择方案：输入"选择1"或"我要方案2"
+    👕 直接选院衫：输入"选院衫"或"我要院衫"
+    🔄 调整方案：比如"方案1换个颜色"、"有没有更休闲的？"
+    ❓ 询问详情：比如"方案2为什么这样搭配颜色？"、"这样穿会不会热？"
+    💭 其他需求：直接告诉我你的想法（如果是提问题记得加上'？'哦qwq）
+
+    请告诉我您的选择或需求～"""
+        else:
+            return self.generate_conversational_response(session, user_input)
+        
+        
     def handle_feedback_collection(self, session: UserSession, user_input: str) -> str:
         """处理反馈收集"""
-        # 提取评分
-        score_match = re.search(r'(\d+)分|(\d+)星', user_input)
-        if score_match:
-            score = int(score_match.group(1) or score_match.group(2))
-            session.feedback_score = min(max(score, 1), 5)  # 限制在1-5分之间
+        user_input_lower = user_input.lower().strip()
         
-        # 保存推荐和反馈
-        self.save_recommendation_feedback(session)
+        # 检测评分
+        rating_match = re.search(r'(\d+)[分星⭐]|(\d+)/5', user_input)
+        if rating_match:
+            rating = int(rating_match.group(1) or rating_match.group(2))
+            if 1 <= rating <= 5:
+                # 保存评分
+                feedback_data = {
+                    'rating': rating,
+                    'feedback_text': user_input,
+                    'timestamp': datetime.now(),
+                    'user_id': session.user_id,
+                    'selected_option': session.selected_option
+                }
+                
+                # 如果选择的是院衫
+                if session.selected_option == 'yuanshan':
+                    feedback_data['outfit_type'] = 'yuanshan'
+                    feedback_data['outfit_details'] = '院衫搭配'
+                else:
+                    # 普通搭配方案
+                    selected = session.current_recommendations[session.selected_option]
+                    feedback_data['outfit_type'] = 'recommendation'
+                    feedback_data['outfit_details'] = selected
+                
+                # 保存反馈到数据库或文件
+                self.save_feedback(feedback_data)
+                
+                # 根据评分给出不同响应
+                if rating >= 4:
+                    response = f"🎉 太棒了！{rating}分的高评价！"
+                    if session.selected_option == 'yuanshan':
+                        response += "\n院衫确实是经典选择，简约百搭～"
+                    else:
+                        response += f"\n看来这套{session.current_recommendations[session.selected_option].get('style_name', '搭配')}很符合你的喜好！"
+                elif rating >= 3:
+                    response = f"👍 {rating}分，还不错！有什么可以改进的地方吗？"
+                else:
+                    response = f"😅 {rating}分，看来还有改进空间。能告诉我哪里不满意吗？"
+                
+                response += "\n\n还有其他想尝试的搭配吗？或者想要什么样的风格？"
+                
+                # 重置状态，准备下一轮对话
+                # session.state = SessionState.GENERAL_CHAT
+                session.state = SessionState.COMPLETED
+                return response
         
-        session.state = SessionState.COMPLETED
-        
-        response = "🙏 感谢你的反馈！"
-        
-        if session.feedback_score:
-            if session.feedback_score >= 4:
-                response += f"\n\n🎉 {session.feedback_score}分！很高兴你喜欢这套搭配！"
-            elif session.feedback_score >= 3:
-                response += f"\n\n😊 {session.feedback_score}分，还不错～我会继续努力！"
+        # 检测文字反馈
+        elif any(word in user_input_lower for word in ['喜欢', '不错', '满意', '好看', '棒', '赞']):
+            # 保存正面反馈
+            feedback_data = {
+                'rating': None,
+                'feedback_text': user_input,
+                'feedback_type': 'positive',
+                'timestamp': datetime.now(),
+                'user_id': session.user_id,
+                'selected_option': session.selected_option
+            }
+            
+            if session.selected_option == 'yuanshan':
+                feedback_data['outfit_type'] = 'yuanshan'
+                response = "😊 很高兴你喜欢院衫！经典永不过时～"
             else:
-                response += f"\n\n😅 {session.feedback_score}分，看来还需要改进，下次我会做得更好！"
+                feedback_data['outfit_type'] = 'recommendation'
+                response = "😊 很高兴你喜欢这套搭配！"
+            
+            self.save_feedback(feedback_data)
+            response += "\n\n还想要其他风格的推荐吗？"
+            return response
         
-        response += """\n\n还有其他需要帮助的吗？
-🔄 重新推荐
-👔 不同场合的穿搭建议
-🛍️ 单品搭配建议
-💡 穿搭小贴士
-❓ 其他问题"""
+        elif any(word in user_input_lower for word in ['不喜欢', '不好', '不满意', '差', '不行']):
+            # 保存负面反馈
+            feedback_data = {
+                'rating': None,
+                'feedback_text': user_input,
+                'feedback_type': 'negative',
+                'timestamp': datetime.now(),
+                'user_id': session.user_id,
+                'selected_option': session.selected_option
+            }
+            
+            if session.selected_option == 'yuanshan':
+                feedback_data['outfit_type'] = 'yuanshan'
+                response = "😅 看来院衫不太符合你的喜好，让我为你推荐其他风格的搭配吧！"
+            else:
+                feedback_data['outfit_type'] = 'recommendation'
+                response = "😅 抱歉这套搭配不太符合你的喜好。"
+            
+            self.save_feedback(feedback_data)
+            response += "\n能告诉我你更喜欢什么样的风格吗？比如休闲、正式、运动风等？"
+            session.state = SessionState.REFINEMENT
+            return response
         
-        return response
+        else:
+            return "请给这套搭配打个分（1-5分）或者告诉我你的想法～\n\n比如：\n- 这套很棒！5分\n- 颜色搭配不错，但是款式不太喜欢\n- 整体满意，4分"
+
+    def save_feedback(self, feedback_data):
+        """保存用户反馈到数据库或文件"""
+        # 这里实现你的数据保存逻辑
+        # 可以保存到数据库、JSON文件等
+        try:
+            # 示例：保存到JSON文件
+            import json
+            import os
+            
+            feedback_file = 'user_feedback.json'
+            
+            if os.path.exists(feedback_file):
+                with open(feedback_file, 'r', encoding='utf-8') as f:
+                    feedbacks = json.load(f)
+            else:
+                feedbacks = []
+            
+            # 将datetime转换为字符串
+            feedback_data_serializable = feedback_data.copy()
+            if 'timestamp' in feedback_data_serializable:
+                feedback_data_serializable['timestamp'] = feedback_data['timestamp'].isoformat()
+            
+            feedbacks.append(feedback_data_serializable)
+            
+            with open(feedback_file, 'w', encoding='utf-8') as f:
+                json.dump(feedbacks, f, ensure_ascii=False, indent=2)
+                
+        except Exception as e:
+            print(f"保存反馈时出错: {e}")
+            # 可以选择记录日志或其他处理方式
     
     def handle_refinement(self, session: UserSession, user_input: str) -> str:
         """处理方案优化"""
@@ -833,28 +1019,117 @@ class InteractiveFashionAssistant:
 
     
     
+    # def generate_smart_recommendations(self, session: UserSession) -> List[Dict]:
+    #     """生成智能推荐 - 增加调试功能"""
+    #     prompt = self.build_smart_prompt(session)
+    #     model_type = os.getenv('MODEL_TYPE', 'qwen')
+    #     api_key = os.getenv('DASHBOARD_API_KEY')
+        
+    #     recommendations_text = self.generate_recommendation(prompt, model_type, api_key)
+        
+    #     # # 调试：打印原始返回文本
+    #     # print("-"*50)
+    #     # print("🔍 AI返回的原始文本：")
+    #     # print(recommendations_text)
+    #     # print("-"*50)
+        
+    #     recommended_clothing = self.clothing_matcher.select_matching_clothing(self,
+    #         recommendations_text, prompt
+    #     )
+        
+    #     # 3. 格式化院衫推荐
+    #     clothing_recommendation = self.clothing_matcher.format_clothing_recommendation(
+    #         recommended_clothing
+    #     )
+        
+    #     print(clothing_recommendation)
+        
+        
+    #     # 怎么用
+        
+        
+    #     parsed_results = self.parse_recommendations(recommendations_text)
+    #     # print(f"📊 解析结果：{len(parsed_results)} 个方案")
+        
+        
+    #     # 解析不出来，其实格式完全无需解析感觉直接输出即可
+        
+    #     # 后续或许再调整
+        
+        
+    #     return parsed_results
+    
+    
     def generate_smart_recommendations(self, session: UserSession) -> List[Dict]:
-        """生成智能推荐 - 增加调试功能"""
+        """生成智能推荐 - 增加调试功能和院衫匹配"""
         prompt = self.build_smart_prompt(session)
         model_type = os.getenv('MODEL_TYPE', 'qwen')
         api_key = os.getenv('DASHBOARD_API_KEY')
         
+        # 1. 获取AI推荐文本
         recommendations_text = self.generate_recommendation(prompt, model_type, api_key)
         
-        # # 调试：打印原始返回文本
+        # 调试：打印原始返回文本（可选开启）
         # print("-"*50)
-        # print("🔍 AI返回的原始文本：")
-        # print(recommendations_text)
+        print("🔍 AI返回的原始文本：")
+        print(recommendations_text)
         # print("-"*50)
         
+        # 2. 获取用户院系信息
+        # user_college = getattr(session, 'college', None) or getattr(session, 'user_college', None)
+        # if not user_college:
+        #     print("⚠️ 用户院系信息未找到，将显示所有院衫")
+        
+        user_college = session.context['user_profile']['college']
+        if not user_college:
+            print("⚠️ 用户院系信息未找到，将显示所有院衫")
+        
+        # 3. 调用院衫匹配，传入院系信息
+        try:
+            recommended_clothing = self.clothing_matcher.select_matching_clothing_by_college(
+                ai_response=recommendations_text,
+                user_query=prompt,
+                college=user_college
+            )
+            
+            # 4. 格式化院衫推荐
+            if recommended_clothing:
+                clothing_recommendation = self.clothing_matcher.format_clothing_recommendation(
+                    recommended_clothing
+                )
+                # print("🎯 院衫推荐：")
+                print(clothing_recommendation)
+                print("-"*50)
+            else:
+                print("⚠️ 未找到匹配的院衫")
+                
+        except Exception as e:
+            print(f"❌ 院衫匹配过程出错：{e}")
+            recommended_clothing = None
+            clothing_recommendation = "暂时无法提供院衫推荐"
+        
+        # 5. 解析AI推荐结果
         parsed_results = self.parse_recommendations(recommendations_text)
         # print(f"📊 解析结果：{len(parsed_results)} 个方案")
         
+        # # 6. 将院衫推荐添加到结果中
+        # if recommended_clothing:
+        #     # 创建院衫推荐项
+        #     clothing_item = {
+        #         'type': 'college_clothing',
+        #         'title': f"{user_college}院衫推荐" if user_college else "院衫推荐",
+        #         'description': clothing_recommendation,
+        #         'clothing_data': recommended_clothing,
+        #         'priority': 1  # 高优先级显示
+        #     }
+
         
-        # 解析不出来，其实格式完全无需解析感觉直接输出即可
         
-        # 后续或许再调整
+        # 目前院衫的推荐没有加入到后续的parse中，后续用户选院衫应另作回复！！！
         
+        
+        #     # 将院衫推荐插入到结果开头
+        #     parsed_results.insert(0, clothing_item)
         
         return parsed_results
     

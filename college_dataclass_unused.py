@@ -124,6 +124,20 @@ class CollegeClothingKnowledgeBase:
                 temperature_range=(-5, 15),
                 style_tags=["机能", "实用", "学院风"],
                 formality=3
+            ),
+            
+            CollegeClothing(
+                college="信息科学技术学院",
+                clothing_type="shirt",
+                name="信科POLO衫",
+                description="白色POLO衫，袖口有学院标识",
+                colors=["白色", "浅蓝色"],
+                suitable_weather=["sunny", "warm"],
+                temperature_range=(15, 30),
+                style_tags=["商务休闲", "简约", "学院风"],
+                formality=3
+                
+                
             )
         ]
         
