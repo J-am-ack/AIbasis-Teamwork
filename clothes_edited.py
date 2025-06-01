@@ -78,6 +78,7 @@ class InteractiveFashionAssistant:
                       style_pref TEXT,
                       city TEXT,
                       occupation TEXT,
+                      college TEXT,
                       created_at TEXT)''')
         
         # 对话历史表
@@ -156,6 +157,7 @@ class InteractiveFashionAssistant:
 3. 平时喜欢什么穿搭风格？（如：休闲、商务、潮流、文艺等）
 4. 所在城市？
 5. 职业？
+6. 院系？（注意请麻烦动动小手输入全名qwq，小北不懂缩写/简称~）
 
 
 
@@ -167,17 +169,20 @@ class InteractiveFashionAssistant:
                 'gender': user_data[2],
                 'style_pref': user_data[3],
                 'city': user_data[4] if len(user_data) > 4 else '北京',
-                'occupation': user_data[5] if len(user_data) > 5 else '大学生'
+                'occupation': user_data[5] if len(user_data) > 5 else '大学生',
+                'college': user_data[6] if len(user_data) >6 else '信息科学技术学院'
             }
             
+            # weather = self.get_weather(session.context['user_profile']['city'])
             weather = self.get_weather(session.context['user_profile']['city'])
+            
             session.context['weather'] = weather
             
             return f"""🎉 {user_data[0]}, 欢迎回来！
 
 📍  当前位置：{session.context['user_profile']['city']}
 🌤️  今日天气：{weather['temp']}°C，{weather['conditions']}
-💧  湿度：{weather['humidity']}%
+
 
 需要我为你推荐今日穿搭吗？还是有其他的想法鸭qwq？"""
     
@@ -192,7 +197,7 @@ class InteractiveFashionAssistant:
         session.context['user_profile'].update(profile)
         
         # 检查是否收集了足够信息
-        required_fields = ['age', 'gender', 'city', 'style_pref' , 'occupation']
+        required_fields = ['age', 'gender', 'city', 'style_pref' , 'occupation', 'college']
         missing_fields = [field for field in required_fields if field not in session.context['user_profile']]
         
         if missing_fields:
@@ -201,7 +206,8 @@ class InteractiveFashionAssistant:
                 'gender': '性别',
                 'city': '所在城市',
                 'style_pref': '穿搭风格偏好',
-                'occupation': '职业'
+                'occupation': '职业',
+                'college': '院系'
             }
             return f"好的，我已经记录了你的信息！\n\n还需要补充：{', '.join([missing_text[field] for field in missing_fields])}"
         else:
@@ -209,13 +215,16 @@ class InteractiveFashionAssistant:
             self.save_user_profile(session.user_id, session.context['user_profile'])
             
             # 获取天气信息
+            # try:
+            #     weather = self.get_weather_hf(session.context['user_profile']['city'])
+            # except:
             weather = self.get_weather(session.context['user_profile']['city'])
             session.context['weather'] = weather
             session.state = SessionState.WEATHER_CONFIRM
             
             return f"""✅ 信息收集完成！
 
-👤 {session.context['user_profile']['age']}岁{session.context['user_profile']['gender']}性朋友
+👤 {session.context['user_profile']['age']}岁{session.context['user_profile']['gender']}孩纸
 📍 {session.context['user_profile']['city']}
 👔 偏好风格：{session.context['user_profile']['style_pref']}
 
@@ -223,7 +232,6 @@ class InteractiveFashionAssistant:
 🌤️ 今日{session.context['user_profile']['city']}天气：
 温度：{weather['temp']}°C
 天气：{weather['conditions']}
-湿度：{weather['humidity']}%
 
 现在开始为你推荐穿搭方案吧！✨"""
     
@@ -297,7 +305,7 @@ class InteractiveFashionAssistant:
 
 🔢 选择方案：输入"选择1"或"我要方案2"
 🔄 调整方案：比如"方案1换个颜色"、"有没有更休闲的？"
-❓ 询问详情：比如"方案2什么颜色？"、"这样穿会不会热？"
+❓ 询问详情：比如"方案2为什么这样搭配颜色？"、"这样穿会不会热？"
 💭 其他需求：直接告诉我你的想法（如果是提问题记得加上'？'哦qwq）
 
 请告诉我您的选择或需求～"""
@@ -383,7 +391,8 @@ class InteractiveFashionAssistant:
         profile = {}
         
         # 提取年龄
-        age_match = re.search(r'(\d{1,2})[岁年]', text)
+        # age_match = re.search(r'(\d{1,2})[岁年]', text)
+        age_match = re.search(r'(\d{1,2})(?:[岁年])?', text)
         if age_match:
             profile['age'] = int(age_match.group(1))
         
@@ -394,7 +403,7 @@ class InteractiveFashionAssistant:
             profile['gender'] = '女'
         
         # 提取城市
-        cities = ['北京', '上海', '广州', '深圳', '杭州', '南京', '成都', '武汉', '重庆', '天津', '苏州', '西安']
+        cities = ['北京', '上海', '广州', '深圳', '杭州', '南京', '成都', '武汉', '重庆', '天津', '苏州', '西安', '石家庄']
         for city in cities:
             if city in text:
                 profile['city'] = city
@@ -407,10 +416,53 @@ class InteractiveFashionAssistant:
             profile['style_pref'] = ','.join(found_styles)
         
         # 提取职业
-        occupations = ['学生', '程序员', '教员', '教授', '科研人员', '医生', '律师', '设计师', '经理', '公务员']
+        occupations = ['学生', '程序员', '教员', '教授', '科研人员', '医生', '律师', '设计师', '经理', '公务员', '创业者', '博士', '研究生','本科生']
         for occupation in occupations:
             if occupation in text:
                 profile['occupation'] = occupation
+                break
+        
+        colleges =  ["数学科学学院",
+    "物理学院",
+    "化学与分子工程学院",
+    "生命科学学院",
+    "城市与环境学院",
+    "地球与空间科学学院",
+    "心理与认知科学学院",
+    "建筑与景观设计学院",
+    "信息科学技术学院",
+    "计算机学院",
+    "电子学院",
+    "智能学院",
+    "软件与微电子学院",
+    "环境科学与工程学院",
+    "工学院",
+    "材料科学与工程学院",
+    "未来技术学院",
+    "集成电路学院",
+    "王选计算机研究所",
+    "经济学院",
+    "光华管理学院",
+    "法学院",
+    "信息管理系",
+    "政府管理学院",
+    "国际关系学院",
+    "社会学系",
+    "马克思主义学院",
+    "教育学院",
+    "新闻与传播学院",
+    "外国语学院",
+    "艺术学院",
+    "元培学院",
+    "体育教研部",
+    "对外汉语教育学院",
+    "人口研究所",
+    "国家发展研究院",
+    "医学部"
+    ]
+        for college in colleges:
+            if college in text:
+                profile['college'] = college
                 break
         
         return profile
@@ -464,7 +516,6 @@ class InteractiveFashionAssistant:
             return {
                 "date": today_forecast['date'],
                 "temp": today_forecast['daytemp'],
-                "humidity": '50  //等一手和风，高德实现不了',
                 "conditions": today_forecast['dayweather']
             }
             
@@ -472,14 +523,314 @@ class InteractiveFashionAssistant:
             print(f"Weather API error: {e}")
             return {"temp": 20, "humidity": 50, "conditions": "未知天气"}
     
-    # def generate_smart_recommendations(self, session: UserSession) -> List[Dict]:
-    #     """生成智能推荐"""
-    #     prompt = self.build_smart_prompt(session)
-    #     model_type = os.getenv('MODEL_TYPE', 'qwen')
-    #     api_key = os.getenv('DASHBOARD_API_KEY')
+    
+    
+    
+    def get_weather_hf(self, location: str, api_key: str = None, api_host: str = None) -> dict:
+        """
+        获取天气信息 - 使用和风天气API (新版配置)
         
-    #     recommendations_text = self.generate_recommendation(prompt, model_type, api_key)
-    #     return self.parse_recommendations(recommendations_text)
+        Args:
+            location: 城市名称或LocationID (推荐使用LocationID以提高准确性)
+            api_key: 和风天气API Key
+            api_host: 个人API Host (在控制台-设置中查看，格式如: abcxyz.qweatherapi.com)
+        
+        Returns:
+            dict: 包含天气信息的字典
+        
+        注意：
+        1. 需要在和风天气控制台 https://console.qweather.com/setting 查看你的个人API Host
+        2. API Host格式类似: abcxyz.qweatherapi.com (每个开发者都不同)
+        3. 支持两种认证方式: API Key Header 或 JWT Bearer Token
+        """
+        
+        # 获取API Key和Host
+        if not api_key:
+            api_key = os.getenv('QWEATHER_API_KEY')
+        
+        if not api_host:
+            api_host = os.getenv('QWEATHER_API_HOST')  
+            
+        if not api_key:
+            print("错误: 未找到和风天气API Key")
+            return {
+                "location": location,
+                "temp": 22, 
+                "humidity": 65, 
+                "conditions": "晴朗",
+                "status": "error",
+                "message": "缺少API Key，请设置QWEATHER_API_KEY环境变量"
+            }
+        
+        if not api_host:
+            print("错误: 未找到API Host")
+            return {
+                "location": location,
+                "temp": 22, 
+                "humidity": 65, 
+                "conditions": "晴朗",
+                "status": "error",
+                "message": "缺少API Host，请在控制台-设置中查看并设置QWEATHER_API_HOST环境变量"
+            }
+        
+        try:
+            # 构建完整的API URL - 使用个人API Host
+            
+            # base_url = f"https://{api_host}/v7/weather/now"
+            # base_url = f"https://{api_host}/airquality/v1/station"
+            
+            id_location_get = self.get_location_id(location)
+            location_id = id_location_get.get('location_id', id_location_get.get('locationid'))
+            base_url = f"https://{api_host}/v7/weather/now/{location_id}"
+            
+            # # 查询参数 (不再包含key参数)
+            # params = {
+            #     'location': location,  # 城市名称或LocationID
+            #     'lang': 'zh'          # 中文响应
+            # }
+            
+            # # 设置请求头 - 使用API Key认证方式
+            # headers = {
+            #     'X-QW-Api-Key': api_key,           # API Key认证
+            #     'Accept-Encoding': 'gzip',         # 支持Gzip压缩
+            #     'User-Agent': 'Python-Weather-Client/1.0'
+            # }
+            
+            # # 发送请求
+            # response = requests.get(base_url, params=params, headers=headers, timeout=10)
+            # response.raise_for_status()
+            
+            
+            # 查询参数 - 根据文档，LocationID应该作为路径参数，而不是查询参数
+            params = {
+                'lang': 'zh'  # 中文响应
+            }
+
+            # 设置请求头 - 使用API Key认证方式
+            headers = {
+                'X-QW-Api-Key': api_key,           # API Key认证
+                'Accept-Encoding': 'gzip',         # 支持Gzip压缩  
+                'User-Agent': 'Python-Weather-Client/1.0'
+            }
+
+
+            # 发送请求
+            # try:
+            
+            
+            
+            response = requests.get(base_url, params=params, headers=headers, timeout=10)
+            response.raise_for_status()
+                
+                # 处理响应数据
+            data = response.json()
+                
+                
+            # except requests.exceptions.RequestException as e:
+            #     print(f"API请求失败: {e}")
+                
+            
+            # 检查API响应状态
+            if data.get('code') != '200':
+                error_messages = {
+                    '400': '请求错误，可能是参数错误',
+                    '401': 'API Key无效或认证失败',
+                    '402': '超过调用次数限制或余额不足', 
+                    '403': '无访问权限，请检查API Host和Key是否正确',
+                    '404': '查询的地区暂时不支持',
+                    '429': '超过QPM限制',
+                    '500': '服务器错误'
+                }
+                error_msg = error_messages.get(data.get('code'), f"未知错误: {data.get('code')}")
+                print(f"和风天气API错误 ({data.get('code')}): {error_msg}")
+                
+                return {
+                    "location": location,
+                    "temp": 20, 
+                    "humidity": 50, 
+                    "conditions": "API错误",
+                    "status": "error",
+                    "code": data.get('code'),
+                    "message": error_msg
+                }
+            
+            # 提取天气数据
+            now_weather = data['now']
+            
+            # 返回格式化的天气信息
+            return {
+                "location": location,
+                "temp": now_weather.get('temp', 'N/A'),           # 温度
+                "feels_like": now_weather.get('feelsLike', 'N/A'), # 体感温度
+                "humidity": now_weather.get('humidity', 'N/A'),    # 相对湿度(%)
+                "conditions": now_weather.get('text', 'N/A'),      # 天气现象文字
+                "wind_speed": now_weather.get('windSpeed', 'N/A'), # 风速(km/h)
+                "wind_direction": now_weather.get('windDir', 'N/A'), # 风向
+                "wind_scale": now_weather.get('windScale', 'N/A'),  # 风力等级
+                "pressure": now_weather.get('pressure', 'N/A'),    # 大气压强(hPa)
+                "visibility": now_weather.get('vis', 'N/A'),       # 能见度(km)
+                "cloud_cover": now_weather.get('cloud', 'N/A'),    # 云量(%)
+                "dew_point": now_weather.get('dew', 'N/A'),        # 露点温度
+                "update_time": data.get('updateTime', 'N/A'),      # 数据更新时间
+                "status": "success"
+            }
+            
+        except requests.exceptions.Timeout:
+            print("和风天气API请求超时")
+            return {
+                "location": location,
+                "temp": 20, 
+                "humidity": 50, 
+                "conditions": "网络超时",
+                "status": "error",
+                "message": "请求超时"
+            }
+        except requests.exceptions.RequestException as e:
+            print(f"和风天气API请求错误: {e}")
+            return {
+                "location": location,
+                "temp": 20, 
+                "humidity": 50, 
+                "conditions": "网络错误",
+                "status": "error",
+                "message": f"网络请求失败: {str(e)}"
+            }
+        except Exception as e:
+            print(f"获取天气信息时发生未知错误: {e}")
+            return {
+                "location": location,
+                "temp": 20, 
+                "humidity": 50, 
+                "conditions": "未知错误",
+                "status": "error",
+                "message": f"未知错误: {str(e)}"
+            }
+
+
+    
+    # 另一种获取天气数据方式，还没试过，应该不影响
+    def get_weather_with_jwt(self, location: str, jwt_token: str = None, api_host: str = None) -> dict:
+        """
+        使用JWT Bearer Token认证的天气获取函数
+        
+        Args:
+            location: 城市名称或LocationID
+            jwt_token: JWT Bearer Token
+            api_host: 个人API Host
+        
+        Returns:
+            dict: 包含天气信息的字典
+        """
+        
+        if not jwt_token:
+            jwt_token = os.getenv('QWEATHER_JWT_TOKEN')
+        
+        if not api_host:
+            api_host = os.getenv('QWEATHER_API_HOST')
+            
+        if not jwt_token or not api_host:
+            return {
+                "status": "error", 
+                "message": "缺少JWT Token或API Host"
+            }
+        
+        try:
+            base_url = f"https://{api_host}/v7/weather/now"
+            
+            params = {
+                'location': location,
+                'lang': 'zh'
+            }
+            
+            # 使用JWT Bearer Token认证
+            headers = {
+                'Authorization': f'Bearer {jwt_token}',
+                'Accept-Encoding': 'gzip',
+                'User-Agent': 'Python-Weather-Client/1.0'
+            }
+            
+            response = requests.get(base_url, params=params, headers=headers, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            if data.get('code') != '200':
+                return {
+                    "status": "error",
+                    "code": data.get('code'),
+                    "message": f"API错误: {data.get('code')}"
+                }
+            
+            now_weather = data['now']
+            return {
+                "location": location,
+                "temp": now_weather.get('temp', 'N/A'),
+                "humidity": now_weather.get('humidity', 'N/A'),
+                "conditions": now_weather.get('text', 'N/A'),
+                "wind_speed": now_weather.get('windSpeed', 'N/A'),
+                "wind_direction": now_weather.get('windDir', 'N/A'),
+                "pressure": now_weather.get('pressure', 'N/A'),
+                "update_time": data.get('updateTime', 'N/A'),
+                "status": "success"
+            }
+            
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"请求失败: {str(e)}"
+            }
+
+
+    def get_location_id(self, city_name: str, api_key: str = None, api_host: str = None) -> dict:
+        """
+        通过城市名称获取LocationID - 新版API配置
+        """
+        
+        if not api_key:
+            api_key = os.getenv('QWEATHER_API_KEY')
+        
+        if not api_host:
+            api_host = os.getenv('QWEATHER_API_HOST')
+            
+        if not api_key or not api_host:
+            return {"status": "error", "message": "缺少API Key或API Host"}
+        
+        try:
+            # 城市搜索API - 使用个人API Host
+            base_url = f"https://{api_host}/geo/v2/city/lookup"
+            
+            params = {
+                'location': city_name,
+                'lang': 'zh'
+            }
+            
+            headers = {
+                'X-QW-Api-Key': api_key,
+                'Accept-Encoding': 'gzip'
+            }
+            
+            response = requests.get(base_url, params=params, headers=headers, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            if data.get('code') != '200' or not data.get('location'):
+                return {"status": "error", "message": f"未找到匹配的城市 (错误代码: {data.get('code')})"}
+            
+            # 返回第一个匹配的城市信息
+            location_info = data['location'][0]
+            return {
+                "location_id": location_info.get('id'),
+                "name": location_info.get('name'),
+                "country": location_info.get('country'),
+                "admin_district": location_info.get('adm1'),
+                "city": location_info.get('adm2'),
+                "lat": location_info.get('lat'),
+                "lon": location_info.get('lon'),
+                "status": "success"
+            }
+            
+        except Exception as e:
+            return {"status": "error", "message": f"搜索城市失败: {str(e)}"}
+
     
     
     def generate_smart_recommendations(self, session: UserSession) -> List[Dict]:
@@ -528,7 +879,9 @@ class InteractiveFashionAssistant:
 【环境条件】
 - 温度：{weather['temp']}°C
 - 天气：{weather['conditions']}  
-- 湿度：{weather['humidity']}%
+
+
+
 
 【对话上下文】
 {conversation_context}
@@ -1230,7 +1583,7 @@ class InteractiveFashionAssistant:
         response = self.generate_recommendation(conversation_prompt, model_type, api_key)
         
         # 如果API调用失败，使用默认回复
-        if not response or "方案1" in response:
+        if not response:
             return f"""我理解你的问题！
 
 作为你的穿搭顾问，我可以帮你：
