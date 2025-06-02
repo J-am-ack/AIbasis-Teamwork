@@ -8,7 +8,6 @@ venv/
 
 *.db
 *.json
-*.splite
 
 # 其他敏感文件
 config.json
