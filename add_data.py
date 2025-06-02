@@ -7,17 +7,17 @@ def add_single_item_v2(db_path: str = "clothing_db.sqlite", item_data: dict = No
     if item_data is None:
         # 示例数据
         item_data = {
-            'name': '诺奖猫狗',
+            'name': '经典&量子',
             'description': 'T-shirt',
-            'style': '酷炫可爱',
-            'color': '米黄色/黑色',
+            'style': '科技感，酷炫',
+            'color': '白色/蓝色',
             'season': '春夏',
             'temp_min': 18,
             'temp_max': 35,
             'weather_conditions': ['晴天', '多云', '阴天'],  # 列表格式
             'image_url': 'https://example.com/medical-protection.jpg',
-            'tags': ['猫猫', '可爱', '生机'],
-            'college': '生命科学学院'
+            'tags': ['科技', '大气', '时钟'],
+            'college': '物理学院'
         }
     
     try:
