@@ -644,6 +644,7 @@ class InteractiveFashionAssistant:
     "对外汉语教育学院",
     "人口研究所",
     "国家发展研究院",
+    "前沿交叉研究院",
     "医学部"
     ]
         for college in colleges:
