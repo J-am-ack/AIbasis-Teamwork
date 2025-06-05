@@ -596,7 +596,7 @@ class InteractiveFashionAssistant:
                 break
         
         # 提取风格偏好
-        styles = ['休闲', '商务', '潮流', '文艺', '运动', '甜美', '酷帅', '简约', '复古', '街头', '性感']
+        styles = ['休闲', '商务', '潮流', '文艺', '运动', '甜美', '酷帅', '简约', '复古', '街头', '性感', '可爱', '萌']
         found_styles = [style for style in styles if style in text]
         if found_styles:
             profile['style_pref'] = ','.join(found_styles)
