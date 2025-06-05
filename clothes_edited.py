@@ -161,7 +161,7 @@ class InteractiveFashionAssistant:
 📝 请告诉我：
 1. 你的年龄？
 2. 性别？
-3. 平时喜欢什么穿搭风格？（如：休闲、商务、潮流、文艺等）
+3. 平时喜欢什么穿搭风格？（如：休闲、商务、潮流、文艺、简约等）
 4. 所在城市？
 5. 职业？
 6. 院系？（注意请麻烦动动小手输入全名qwq，小北不懂缩写/简称~）
@@ -261,7 +261,7 @@ class InteractiveFashionAssistant:
         
         response += """你可以：
 👕 拒绝纠结，直接穿上最心爱的院衫！（如：就穿院衫啦~）
-🔢 输入具体要选择方案（如：选择1）
+🔢 输入具体要选择方案（如：选择1）（记得要有数字而不是汉字qwq）
 ❓ 询问某个方案的详细信息（如：方案1的颜色搭配？）
 🔄 要求调整某个方案（如：方案2能换个颜色吗？）
    直接告诉我你的想法和需求"""
@@ -304,7 +304,7 @@ class InteractiveFashionAssistant:
 - 其他想法和建议？"""
         
         # 检测调整需求
-        elif any(word in user_input for word in ['调整', '换', '改', '不喜欢', '其他', '更多', '选择']):
+        elif any(word in user_input for word in ['调整', '换', '改', '不喜欢', '其他', '更多', '选择', '去掉', '增加']):
             session.state = SessionState.REFINEMENT
             return self.handle_refinement_request(session, user_input)
         
@@ -316,7 +316,7 @@ class InteractiveFashionAssistant:
             self.wrongtime +=1
             return """小北没有get到你的想法ww/(ㄒoㄒ)/~~，你可以：
 
-🔢 选择方案：输入"选择1"或"我要方案2"
+🔢 选择方案：输入"选择1"或"我要方案2"(请记得输入数字而不是汉字一/二/三~)
 🔄 调整方案：比如"方案1换个颜色"、"有没有更休闲的？"
 ❓ 询问详情：比如"方案2为什么这样搭配颜色？"、"这样穿会不会热？"
 💭 其他需求：直接告诉我你的想法（如果是提问题记得加上'？'哦qwq）
@@ -596,7 +596,7 @@ class InteractiveFashionAssistant:
                 break
         
         # 提取风格偏好
-        styles = ['休闲', '商务', '潮流', '文艺', '运动', '甜美', '酷帅', '简约', '复古', '街头']
+        styles = ['休闲', '商务', '潮流', '文艺', '运动', '甜美', '酷帅', '简约', '复古', '街头', '性感']
         found_styles = [style for style in styles if style in text]
         if found_styles:
             profile['style_pref'] = ','.join(found_styles)
@@ -1072,8 +1072,8 @@ class InteractiveFashionAssistant:
         
         # 调试：打印原始返回文本（可选开启）
         # print("-"*50)
-        print("🔍 AI返回的原始文本：")
-        print(recommendations_text)
+        # print("🔍 AI返回的原始文本：")
+        # print(recommendations_text)
         # print("-"*50)
         
         # 2. 获取用户院系信息
@@ -1093,6 +1093,11 @@ class InteractiveFashionAssistant:
                 college=user_college
             )
             
+            instead_clothing = self.clothing_matcher.select_matching_clothing(
+                qwen_response=recommendations_text,
+                user_query=prompt                
+            )
+            
             # 4. 格式化院衫推荐
             if recommended_clothing:
                 clothing_recommendation = self.clothing_matcher.format_clothing_recommendation(
@@ -1102,7 +1107,13 @@ class InteractiveFashionAssistant:
                 print(clothing_recommendation)
                 print("-"*50)
             else:
-                print("⚠️ 未找到匹配的院衫")
+                print("⚠️ 在您所在院系中未找到匹配的院衫，下面为您推荐其他院系~")
+                clothing_insteadation = self.clothing_matcher.format_clothing_recommendation(
+                    instead_clothing
+                )
+                print(clothing_insteadation)
+                print("-"*50)
+                
                 
         except Exception as e:
             print(f"❌ 院衫匹配过程出错：{e}")

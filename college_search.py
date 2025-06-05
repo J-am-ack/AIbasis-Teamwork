@@ -405,16 +405,16 @@ class ClothingMatcher:
             if college:
                 clothing_items = self.db_query.get_clothing_by_college(college, limit=1)
             
-            # 如果还是没有，按关键词搜索（不限院系）
-            if not clothing_items and all_keywords:
-                clothing_items = self.db_query.search_clothing_by_keywords(all_keywords, limit=1)
+            # # 如果还是没有，按关键词搜索（不限院系）
+            # if not clothing_items and all_keywords:
+            #     clothing_items = self.db_query.search_clothing_by_keywords(all_keywords, limit=1)
             
             # 最后随机选择该院系的
-            if not clothing_items:
-                if college:
-                    clothing_items = self.db_query.get_random_clothing_by_college(college, 1)
-                else:
-                    clothing_items = self.db_query.get_random_clothing(1)
+            # if not clothing_items:
+            #     if college:
+            #         clothing_items = self.db_query.get_random_clothing_by_college(college, 1)
+            #     else:
+            #         clothing_items = self.db_query.get_random_clothing(1)
         
         return clothing_items[0] if clothing_items else None
     
