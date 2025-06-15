@@ -645,7 +645,8 @@ class InteractiveFashionAssistant:
     "人口研究所",
     "国家发展研究院",
     "前沿交叉研究院",
-    "医学部"
+    "医学部",
+    "历史学系"
     ]
         for college in colleges:
             if college in text:
