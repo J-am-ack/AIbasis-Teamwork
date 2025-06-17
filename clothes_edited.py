@@ -596,7 +596,7 @@ class InteractiveFashionAssistant:
                 break
         
         # 提取风格偏好
-        styles = ['休闲', '商务', '潮流', '文艺', '运动', '甜美', '酷帅', '简约', '复古', '街头', '性感', '可爱', '萌']
+        styles = ['休闲', '商务', '潮流', '文艺', '运动', '甜美', '酷帅', '简约', '复古', '街头', '性感', '可爱', '萌', '国风', '抽象', '赛博朋克', '科技']
         found_styles = [style for style in styles if style in text]
         if found_styles:
             profile['style_pref'] = ','.join(found_styles)
@@ -1595,7 +1595,7 @@ class InteractiveFashionAssistant:
         
         if any(word in request for word in ['颜色', '色彩', '亮', '暗', '深', '浅', '白', '黑', '撞色', '刺眼', '红', '绿','交叉色', '纯色']):
             return "调整颜色搭配"
-        elif any(word in request for word in ['风格', '休闲', '商务', '正式', '潮流']):
+        elif any(word in request for word in ['风格', '休闲', '商务', '正式', '潮流', '运动', '约会']):
             return "调整穿搭风格"
         elif any(word in request for word in ['热', '冷', '透气', '保暖', '厚', '薄']):
             return "调整舒适度和温度适应性"
