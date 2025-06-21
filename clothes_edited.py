@@ -245,11 +245,14 @@ class InteractiveFashionAssistant:
     def handle_weather_confirm(self, session: UserSession, user_input: str) -> str:
         """处理天气确认和生成推荐"""
         # 生成穿搭推荐
+        c_recommendations = self.generate_college_rec(session)
         recommendations = self.generate_smart_recommendations(session)
         session.current_recommendations = recommendations
         session.state = SessionState.RECOMMENDATION_SHOWN
         
-        response = "🎯  在院衫之外， 小北还为你精心挑选了几套穿搭方案哦：\n\n"
+        response = c_recommendations
+        
+        response += "🎯  在院衫之外， 小北还为你精心挑选了几套穿搭方案哦：\n\n"
         
         for i, option in enumerate(recommendations, 1):
             response += f"**方案 {i}：{option.get('style_name', f'搭配{i}')}**\n"
@@ -1062,6 +1065,139 @@ class InteractiveFashionAssistant:
     #     return parsed_results
     
     
+    # def generate_smart_recommendations(self, session: UserSession) -> List[Dict]:
+    #     """生成智能推荐 - 增加调试功能和院衫匹配"""
+    #     prompt = self.build_smart_prompt(session)
+    #     model_type = os.getenv('MODEL_TYPE', 'qwen')
+    #     api_key = os.getenv('DASHBOARD_API_KEY')
+        
+    #     # 1. 获取AI推荐文本
+    #     recommendations_text = self.generate_recommendation(prompt, model_type, api_key)
+        
+    #     # 2. 获取用户院系信息
+    #     user_college = session.context['user_profile']['college']
+    #     if not user_college:
+    #         print("⚠️ 用户院系信息未找到，将显示所有院衫")
+        
+    #     # 3. 调用院衫匹配，传入院系信息
+    #     try:
+    #         recommended_clothing = self.clothing_matcher.select_matching_clothing_by_college(
+    #             ai_response=recommendations_text,
+    #             user_query=prompt,
+    #             college=user_college
+    #         )
+            
+    #         # 如果当前院系没有匹配结果，则获取其他推荐
+    #         if not recommended_clothing:
+    #             print("⚠️ 在您所在院系中未找到匹配的院衫，下面为您推荐其他院系~")
+    #             recommended_clothing = self.clothing_matcher.select_matching_clothing(
+    #                 qwen_response=recommendations_text,
+    #                 user_query=prompt                
+    #             )
+                
+    #         # 4. 格式化院衫推荐
+    #         if recommended_clothing:
+    #             clothing_recommendation = self.clothing_matcher.format_clothing_recommendation(
+    #                 recommended_clothing
+    #             )
+    #             print("🎯 院衫推荐：")
+    #             print(clothing_recommendation)
+    #             print("-"*50)
+    #         else:
+    #             clothing_recommendation = "未找到匹配的院衫推荐"
+                    
+    #     except Exception as e:
+    #         print(f"❌ 院衫匹配过程出错：{e}")
+    #         recommended_clothing = None
+    #         clothing_recommendation = "暂时无法提供院衫推荐"
+        
+    #     # 5. 解析AI推荐结果
+    #     parsed_results = self.parse_recommendations(recommendations_text)
+    #     print(f"📊 解析结果：{len(parsed_results)} 个方案")
+        
+    #     # 6. 创建院衫推荐项并添加到结果列表末尾
+    #     clothing_item = {
+    #         'type': 'college_clothing',
+    #         'title': f"{user_college}院衫推荐" if user_college else "院衫推荐",
+    #         'description': clothing_recommendation,
+    #         'clothing_data': recommended_clothing,
+    #         'priority': 0  # 设置较低优先级，显示在末尾
+    #     }
+    #     parsed_results.append(clothing_item)
+        
+    #     return parsed_results
+    
+    
+    def generate_college_rec(self, session: UserSession) -> List[Dict]:
+        
+        c_re = ''
+        
+        prompt = self.build_smart_prompt(session)
+        model_type = os.getenv('MODEL_TYPE', 'qwen')
+        api_key = os.getenv('DASHBOARD_API_KEY')
+        
+        # 1. 获取AI推荐文本
+        recommendations_text = self.generate_recommendation(prompt, model_type, api_key)
+        
+        
+        user_college = session.context['user_profile']['college']
+        if not user_college:
+            print("⚠️ 用户院系信息未找到，将显示所有院衫")
+            c_re += "⚠️ 用户院系信息未找到，将显示所有院衫"
+        # 3. 调用院衫匹配，传入院系信息
+        try:
+            recommended_clothing = self.clothing_matcher.select_matching_clothing_by_college(
+                ai_response=recommendations_text,
+                user_query=prompt,
+                college=user_college
+            )
+            
+            instead_clothing = self.clothing_matcher.select_matching_clothing(
+                qwen_response=recommendations_text,
+                user_query=prompt                
+            )
+            
+            # 4. 格式化院衫推荐
+            if recommended_clothing:
+                clothing_recommendation = self.clothing_matcher.format_clothing_recommendation(
+                    recommended_clothing
+                )
+                # print("🎯 院衫推荐：")
+                print(clothing_recommendation)
+                c_re += clothing_recommendation
+                c_re += '\n'
+                print("-"*50)
+                c_re += "-"*50
+                c_re += '\n'
+            else:
+                print("⚠️ 在您所在院系中未找到匹配的院衫，下面为您推荐其他院系~")
+                c_re += "⚠️ 在您所在院系中未找到匹配的院衫，下面为您推荐其他院系~"
+                c_re += '\n'
+                clothing_insteadation = self.clothing_matcher.format_clothing_recommendation(
+                    instead_clothing
+                )
+                print(clothing_insteadation)
+                c_re += clothing_insteadation
+                c_re += '\n'
+                print("-"*50)
+                c_re += "-"*50
+                c_re += '\n'
+                
+                
+        except Exception as e:
+            print(f"❌ 院衫匹配过程出错：{e}")
+            c_re += "❌ 院衫匹配过程出错：{e} , 暂时无法提供院衫推荐"
+            recommended_clothing = None
+            clothing_recommendation = "暂时无法提供院衫推荐"
+            
+            
+        return c_re
+    
+    
+    
+    
+    
+
     def generate_smart_recommendations(self, session: UserSession) -> List[Dict]:
         """生成智能推荐 - 增加调试功能和院衫匹配"""
         prompt = self.build_smart_prompt(session)
