@@ -19,49 +19,45 @@ class LoginDialog(QDialog):
         # 设置窗口无边框并置顶
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         self.setStyleSheet("background-color: #FFFFFF; border-radius: 10px;")
-        self.setFixedSize(400, 500)
+        self.setFixedSize(450, 550)  # 稍微放大整个对话框
         
         # 主布局
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         
-        # 顶部Logo区域
-        logo_frame = QFrame(self)
-        logo_frame.setStyleSheet("background-color: #07C160; border-radius: 10px 10px 0 0;")
-        logo_frame.setFixedHeight(150)
+        # 顶部区域 - 包含Logo和关闭按钮
+        top_frame = QFrame(self)
+        top_frame.setStyleSheet("background-color: #07C160; border-radius: 10px 10px 0 0;")
+        top_frame.setFixedHeight(100)  # 增加顶部区域高度
         
-        logo_layout = QVBoxLayout(logo_frame)
-        logo_layout.setAlignment(Qt.AlignCenter)
+        top_layout = QHBoxLayout(top_frame)
+        top_layout.setContentsMargins(15, 15, 15, 15)
+        
+        # Logo - 放大并居中
+        logo_label = QLabel(self)
+        logo_pixmap = QPixmap("logo.png").scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if not logo_pixmap.isNull():
+            logo_label.setPixmap(logo_pixmap)
+        else:
+            logo_label.setText("PKU")
+            logo_label.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
+        logo_label.setAlignment(Qt.AlignCenter)  # 居中对齐
         
         # 关闭按钮
         close_btn = QPushButton("×", self)
         close_btn.setStyleSheet("""
             background-color: transparent;
             color: white;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
             border: none;
             padding: 0;
         """)
         close_btn.setCursor(QCursor(Qt.PointingHandCursor))
         close_btn.clicked.connect(self.close)
-        logo_layout.addWidget(close_btn, alignment=Qt.AlignTop | Qt.AlignRight)
         
-        logo_label = QLabel(self)
-        logo_pixmap = QPixmap("logo.png").scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        if not logo_pixmap.isNull():  # 检查是否成功加载图片
-            logo_label.setPixmap(logo_pixmap)
-        else:
-            logo_label.setText("PKU")
-            logo_label.setStyleSheet("color: white; font-size: 36px; font-weight: bold;")
-        logo_label.setAlignment(Qt.AlignCenter)
-        
-        title_label = QLabel("PKU Survivor", self)
-        title_label.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
-        title_label.setAlignment(Qt.AlignCenter)
-        
-        logo_layout.addWidget(logo_label)
-        logo_layout.addWidget(title_label)
+        top_layout.addWidget(logo_label, 1)  # 占1份空间
+        top_layout.addWidget(close_btn, 0, Qt.AlignTop | Qt.AlignRight)  # 靠右对齐
         
         # 底部登录区域
         login_frame = QFrame(self)
@@ -71,6 +67,12 @@ class LoginDialog(QDialog):
         login_layout.setContentsMargins(30, 30, 30, 30)
         login_layout.setSpacing(20)
         
+        # 标题
+        title_label = QLabel("PKU Survivor", self)
+        title_label.setStyleSheet("color: #07C160; font-size: 28px; font-weight: bold; text-align: center;")
+        title_label.setAlignment(Qt.AlignCenter)
+        login_layout.addWidget(title_label)
+        
         # 选项卡
         tabs_layout = QHBoxLayout()
         
@@ -78,10 +80,10 @@ class LoginDialog(QDialog):
         self.login_tab.setStyleSheet("""
             background-color: #07C160; 
             color: white; 
-            font-size: 16px; 
+            font-size: 18px; 
             font-weight: bold;
             border-radius: 5px;
-            padding: 10px;
+            padding: 12px;
             width: 50%;
         """)
         self.login_tab.setCursor(QCursor(Qt.PointingHandCursor))
@@ -91,11 +93,11 @@ class LoginDialog(QDialog):
         self.register_tab.setStyleSheet("""
             background-color: #FFFFFF; 
             color: #07C160; 
-            font-size: 16px; 
+            font-size: 18px; 
             font-weight: bold;
             border: 1px solid #07C160;
             border-radius: 5px;
-            padding: 10px;
+            padding: 12px;
             width: 50%;
         """)
         self.register_tab.setCursor(QCursor(Qt.PointingHandCursor))
@@ -114,8 +116,8 @@ class LoginDialog(QDialog):
         self.login_username.setStyleSheet("""
             border: 1px solid #E5E5E5;
             border-radius: 5px;
-            padding: 10px;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 16px;
         """)
         
         self.login_password = QLineEdit(self)
@@ -124,18 +126,18 @@ class LoginDialog(QDialog):
         self.login_password.setStyleSheet("""
             border: 1px solid #E5E5E5;
             border-radius: 5px;
-            padding: 10px;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 16px;
         """)
         
         self.login_button = QPushButton("登录", self)
         self.login_button.setStyleSheet("""
             background-color: #07C160;
             color: white;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             border-radius: 5px;
-            padding: 12px;
+            padding: 14px;
         """)
         self.login_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.login_button.clicked.connect(self.handle_login)
@@ -155,8 +157,8 @@ class LoginDialog(QDialog):
         self.register_username.setStyleSheet("""
             border: 1px solid #E5E5E5;
             border-radius: 5px;
-            padding: 10px;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 16px;
         """)
         
         self.register_password = QLineEdit(self)
@@ -165,8 +167,8 @@ class LoginDialog(QDialog):
         self.register_password.setStyleSheet("""
             border: 1px solid #E5E5E5;
             border-radius: 5px;
-            padding: 10px;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 16px;
         """)
         
         self.register_confirm = QLineEdit(self)
@@ -175,19 +177,19 @@ class LoginDialog(QDialog):
         self.register_confirm.setStyleSheet("""
             border: 1px solid #E5E5E5;
             border-radius: 5px;
-            padding: 10px;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 16px;
         """)
         
         self.register_button = QPushButton("注册", self)
         self.register_button.setStyleSheet("""
             background-color: #FFFFFF;
             color: #07C160;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             border: 2px solid #07C160;
             border-radius: 5px;
-            padding: 12px;
+            padding: 14px;
         """)
         self.register_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.register_button.clicked.connect(self.handle_register)
@@ -203,7 +205,7 @@ class LoginDialog(QDialog):
         login_layout.addWidget(self.register_form)
         
         # 整体布局
-        main_layout.addWidget(logo_frame)
+        main_layout.addWidget(top_frame)
         main_layout.addWidget(login_frame)
         
         # 初始化当前表单
@@ -231,20 +233,20 @@ class LoginDialog(QDialog):
             self.login_tab.setStyleSheet("""
                 background-color: #07C160; 
                 color: white; 
-                font-size: 16px; 
+                font-size: 18px; 
                 font-weight: bold;
                 border-radius: 5px;
-                padding: 10px;
+                padding: 12px;
                 width: 50%;
             """)
             self.register_tab.setStyleSheet("""
                 background-color: #FFFFFF; 
                 color: #07C160; 
-                font-size: 16px; 
+                font-size: 18px; 
                 font-weight: bold;
                 border: 1px solid #07C160;
                 border-radius: 5px;
-                padding: 10px;
+                padding: 12px;
                 width: 50%;
             """)
             self.login_form.show()
@@ -254,20 +256,20 @@ class LoginDialog(QDialog):
             self.login_tab.setStyleSheet("""
                 background-color: #FFFFFF; 
                 color: #07C160; 
-                font-size: 16px; 
+                font-size: 18px; 
                 font-weight: bold;
                 border: 1px solid #07C160;
                 border-radius: 5px;
-                padding: 10px;
+                padding: 12px;
                 width: 50%;
             """)
             self.register_tab.setStyleSheet("""
                 background-color: #07C160; 
                 color: white; 
-                font-size: 16px; 
+                font-size: 18px; 
                 font-weight: bold;
                 border-radius: 5px;
-                padding: 10px;
+                padding: 12px;
                 width: 50%;
             """)
             self.login_form.hide()
@@ -318,15 +320,15 @@ class LoginDialog(QDialog):
                 border-radius: 10px;
             }
             QLabel {
-                font-size: 14px;
-                padding: 10px;
+                font-size: 16px;
+                padding: 15px;
             }
             QPushButton {
                 background-color: #07C160;
                 color: white;
                 border-radius: 5px;
-                padding: 5px 15px;
-                font-size: 14px;
+                padding: 8px 20px;
+                font-size: 16px;
             }
         """)
         error_dialog.exec_()
@@ -341,24 +343,24 @@ class WelcomeTips(QDialog):
         layout = QVBoxLayout()
         
         tips_text = """
-        <h3 style="color: #07C160; font-size: 20px;">小北穿搭助手使用指南</h3>
-        <p style="font-size: 14px; margin-top: 10px;"><b>1. 基本功能</b></p>
-        <ul style="font-size: 14px; margin-left: 20px;">
+        <h3 style="color: #07C160; font-size: 22px;">小北穿搭助手使用指南</h3>
+        <p style="font-size: 16px; margin-top: 10px;"><b>1. 基本功能</b></p>
+        <ul style="font-size: 16px; margin-left: 20px;">
             <li>输入天气信息(如"今天28度晴天")获取穿搭建议</li>
             <li>输入"调整/优化+需求"修改推荐方案(如"优化成更正式的风格")</li>
             <li>输入"历史"查看历史记录</li>
             <li>输入"退出"结束对话</li>
         </ul>
         
-        <p style="font-size: 14px; margin-top: 10px;"><b>2. 高级功能</b></p>
-        <ul style="font-size: 14px; margin-left: 20px;">
+        <p style="font-size: 16px; margin-top: 10px;"><b>2. 高级功能</b></p>
+        <ul style="font-size: 16px; margin-left: 20px;">
             <li>输入"保存方案"保存当前穿搭</li>
             <li>输入"我的方案"查看已保存的穿搭</li>
             <li>输入"偏好设置"调整个人穿搭偏好</li>
         </ul>
         
-        <p style="font-size: 14px; margin-top: 10px;"><b>3. 交互技巧</b></p>
-        <ul style="font-size: 14px; margin-left: 20px;">
+        <p style="font-size: 16px; margin-top: 10px;"><b>3. 交互技巧</b></p>
+        <ul style="font-size: 16px; margin-left: 20px;">
             <li>使用"再推荐一些"获取更多选择</li>
             <li>对推荐不满意时，明确指出问题(如"太花哨了")</li>
             <li>指定场景(如"面试穿搭")获取针对性建议</li>
@@ -368,19 +370,19 @@ class WelcomeTips(QDialog):
         tips_label = QLabel(tips_text)
         tips_label.setWordWrap(True)
         tips_label.setTextFormat(Qt.RichText)
-        tips_label.setStyleSheet("padding: 20px;")
+        tips_label.setStyleSheet("padding: 25px;")
         
         ok_btn = QPushButton("我知道了")
         ok_btn.setStyleSheet("""
             background-color: #07C160;
             color: white;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             border-radius: 5px;
-            padding: 10px 20px;
+            padding: 12px 25px;
             margin: 20px;
         """)
-        ok_btn.setFixedWidth(150)
+        ok_btn.setFixedWidth(180)
         ok_btn.setCursor(QCursor(Qt.PointingHandCursor))
         ok_btn.clicked.connect(self.accept)
         
@@ -415,11 +417,11 @@ class ChatBubble(QWidget):
             alignment = Qt.AlignLeft
             
         label.setStyleSheet(f"""
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 18px;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
             background-color: {bg_color};
-            max-width: 100%;
+            max-width: 85%;
         """)
         
         layout.setAlignment(alignment)
@@ -435,27 +437,27 @@ class AgentSelectionWidget(QWidget):
     def initUI(self):
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignCenter)
-        layout.setSpacing(30)
+        layout.setSpacing(40)
         
         title_label = QLabel("选择你的智能助手")
-        title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #07C160; margin-bottom: 20px;")
+        title_label.setStyleSheet("font-size: 28px; font-weight: bold; color: #07C160; margin-bottom: 20px;")
         title_label.setAlignment(Qt.AlignCenter)
         
         # 三个Agent按钮
         agents_layout = QVBoxLayout()
         agents_layout.setAlignment(Qt.AlignCenter)
-        agents_layout.setSpacing(20)
+        agents_layout.setSpacing(25)
         
         # 小北穿搭
         fashion_agent_btn = QPushButton("小北穿搭")
         fashion_agent_btn.setStyleSheet("""
             background-color: #07C160;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            border-radius: 10px;
-            padding: 15px 30px;
-            width: 300px;
+            border-radius: 12px;
+            padding: 18px 35px;
+            width: 350px;
         """)
         fashion_agent_btn.setCursor(QCursor(Qt.PointingHandCursor))
         fashion_agent_btn.clicked.connect(lambda: self.parent.select_agent(1))
@@ -465,11 +467,11 @@ class AgentSelectionWidget(QWidget):
         sports_agent_btn.setStyleSheet("""
             background-color: #07C160;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            border-radius: 10px;
-            padding: 15px 30px;
-            width: 300px;
+            border-radius: 12px;
+            padding: 18px 35px;
+            width: 350px;
         """)
         sports_agent_btn.setCursor(QCursor(Qt.PointingHandCursor))
         sports_agent_btn.clicked.connect(lambda: self.parent.select_agent(2))
@@ -479,11 +481,11 @@ class AgentSelectionWidget(QWidget):
         diet_agent_btn.setStyleSheet("""
             background-color: #07C160;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            border-radius: 10px;
-            padding: 15px 30px;
-            width: 300px;
+            border-radius: 12px;
+            padding: 18px 35px;
+            width: 350px;
         """)
         diet_agent_btn.setCursor(QCursor(Qt.PointingHandCursor))
         diet_agent_btn.clicked.connect(lambda: self.parent.select_agent(3))
@@ -496,12 +498,12 @@ class AgentSelectionWidget(QWidget):
         back_btn.setStyleSheet("""
             background-color: white;
             color: #07C160;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             border: 2px solid #07C160;
             border-radius: 10px;
-            padding: 10px 20px;
-            width: 150px;
+            padding: 12px 25px;
+            width: 180px;
         """)
         back_btn.setCursor(QCursor(Qt.PointingHandCursor))
         back_btn.clicked.connect(self.parent.show_welcome)
@@ -526,9 +528,9 @@ class AIAgentApp(QWidget):
     
     def initUI(self):
         # 主窗口设置
-        self.setWindowTitle('PKU Survivor')  # 保持原应用名称
+        self.setWindowTitle('PKU Survivor')
         self.setGeometry(100, 100, 1024, 780)
-        font = QFont("Arial", 10)
+        font = QFont("Arial", 12)
         self.setFont(font)
         
         # 主布局
@@ -538,22 +540,39 @@ class AIAgentApp(QWidget):
         # 创建欢迎界面容器
         self.welcome_widget = QWidget()
         welcome_layout = QVBoxLayout(self.welcome_widget)
-        welcome_layout.setAlignment(Qt.AlignTop)  # 内容靠上排列
+        welcome_layout.setAlignment(Qt.AlignCenter)  # 整体内容居中
+        
+        # 欢迎界面Logo - 放大并居中，无背景
+        logo_frame = QFrame(self)
+        logo_frame.setStyleSheet("background-color: transparent;")
+        
+        logo_layout = QVBoxLayout(logo_frame)
+        logo_layout.setAlignment(Qt.AlignCenter)
+        
+        logo_label = QLabel(self)
+        logo_pixmap = QPixmap("logo.png").scaled(400, 400, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if not logo_pixmap.isNull():
+            logo_label.setPixmap(logo_pixmap)
+        else:
+            logo_label.setText("PKU Survivor")
+            logo_label.setStyleSheet("color: #07C160; font-size: 48px; font-weight: bold;")
+        logo_label.setAlignment(Qt.AlignCenter)
+        
+        logo_layout.addWidget(logo_label)
         
         # 欢迎界面标题
         title_frame = QFrame(self)
         title_frame.setStyleSheet("background-color: #07C160;")
-        title_frame.setFixedHeight(200)
         
         title_layout = QVBoxLayout(title_frame)
         title_layout.setAlignment(Qt.AlignCenter)
         
-        title_label = QLabel("PKU Survivor")
-        title_label.setStyleSheet("color: white; font-size: 48px; font-weight: bold;")
+        title_label = QLabel("Welcome to PKU survivor!")
+        title_label.setStyleSheet("color: white; font-size: 42px; font-weight: bold;")
         title_label.setAlignment(Qt.AlignCenter)
         
-        subtitle_label = QLabel("智能助手平台")
-        subtitle_label.setStyleSheet("color: white; font-size: 24px; margin-top: 10px;")
+        subtitle_label = QLabel("专属PKUers的生活助手，从此打造个性化生活方式")
+        subtitle_label.setStyleSheet("color: #333333; font-size: 24px; margin-top: 15px;")
         subtitle_label.setAlignment(Qt.AlignCenter)
         
         title_layout.addWidget(title_label)
@@ -561,26 +580,26 @@ class AIAgentApp(QWidget):
         
         # 欢迎界面内容
         content_frame = QFrame(self)
-        content_frame.setStyleSheet("background-color: white;")
+        content_frame.setStyleSheet("background-color: transparent;")
         
         content_layout = QVBoxLayout(content_frame)
         content_layout.setAlignment(Qt.AlignCenter)
-        content_layout.setSpacing(40)
+        content_layout.setSpacing(50)
         
         # 功能介绍
         features_frame = QFrame(self)
-        features_frame.setStyleSheet("background-color: white; padding: 20px;")
+        features_frame.setStyleSheet("background-color: transparent; padding: 20px;")
         
         features_layout = QVBoxLayout(features_frame)
         
         feature1 = QLabel("✨ 智能穿搭推荐")
-        feature1.setStyleSheet("font-size: 18px; margin-bottom: 10px;")
+        feature1.setStyleSheet("font-size: 22px; margin-bottom: 15px;")
         
         feature2 = QLabel("✨ 运动健身指导")
-        feature2.setStyleSheet("font-size: 18px; margin-bottom: 10px;")
+        feature2.setStyleSheet("font-size: 22px; margin-bottom: 15px;")
         
         feature3 = QLabel("✨ 健康饮食建议")
-        feature3.setStyleSheet("font-size: 18px;")
+        feature3.setStyleSheet("font-size: 22px;")
         
         features_layout.addWidget(feature1)
         features_layout.addWidget(feature2)
@@ -591,12 +610,12 @@ class AIAgentApp(QWidget):
         start_btn.setStyleSheet("""
             background-color: #07C160;
             color: white;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
-            border-radius: 30px;
-            padding: 15px 30px;
+            border-radius: 35px;
+            padding: 18px 40px;
         """)
-        start_btn.setFixedWidth(200)
+        start_btn.setFixedWidth(240)
         start_btn.setCursor(QCursor(Qt.PointingHandCursor))
         start_btn.clicked.connect(self.show_agent_selection)
         
@@ -605,8 +624,11 @@ class AIAgentApp(QWidget):
         content_layout.addWidget(start_btn, alignment=Qt.AlignCenter)
         content_layout.addStretch()
         
+        welcome_layout.addStretch()
+        welcome_layout.addWidget(logo_frame)
         welcome_layout.addWidget(title_frame)
         welcome_layout.addWidget(content_frame)
+        welcome_layout.addStretch()
         
         # 创建Agent选择界面
         self.agent_selection_widget = AgentSelectionWidget(self)
@@ -619,7 +641,7 @@ class AIAgentApp(QWidget):
         # 聊天顶部栏
         top_bar = QFrame(self)
         top_bar.setStyleSheet("background-color: #07C160; color: white; padding: 10px;")
-        top_bar.setFixedHeight(60)
+        top_bar.setFixedHeight(65)
         
         top_bar_layout = QHBoxLayout(top_bar)
         
@@ -630,7 +652,7 @@ class AIAgentApp(QWidget):
         back_btn.clicked.connect(self.show_agent_selection)
         
         self.agent_title_label = QLabel("小北穿搭助手")
-        self.agent_title_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.agent_title_label.setStyleSheet("font-size: 20px; font-weight: bold;")
         
         top_bar_layout.addWidget(back_btn)
         top_bar_layout.addWidget(self.agent_title_label)
@@ -645,14 +667,14 @@ class AIAgentApp(QWidget):
         self.chat_container = QWidget()
         self.chat_layout_inner = QVBoxLayout(self.chat_container)
         self.chat_layout_inner.setAlignment(Qt.AlignTop)
-        self.chat_layout_inner.setSpacing(15)
-        self.chat_layout_inner.setContentsMargins(20, 20, 20, 20)
+        self.chat_layout_inner.setSpacing(20)
+        self.chat_layout_inner.setContentsMargins(25, 25, 25, 25)
         
         self.chat_scroll.setWidget(self.chat_container)
         
         # 输入区域
         input_frame = QFrame(self)
-        input_frame.setStyleSheet("background-color: white; border-top: 1px solid #E5E5E5; padding: 10px;")
+        input_frame.setStyleSheet("background-color: white; border-top: 1px solid #E5E5E5; padding: 15px;")
         
         input_layout = QHBoxLayout(input_frame)
         
@@ -660,10 +682,10 @@ class AIAgentApp(QWidget):
         self.message_input.setPlaceholderText("输入消息...")
         self.message_input.setStyleSheet("""
             border: 1px solid #E5E5E5;
-            border-radius: 20px;
-            padding: 10px 15px;
-            font-size: 14px;
-            height: 40px;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 16px;
+            height: 45px;
         """)
         self.message_input.returnPressed.connect(self.send_message)
         
@@ -672,10 +694,11 @@ class AIAgentApp(QWidget):
             background-color: #07C160;
             color: white;
             font-weight: bold;
-            border-radius: 20px;
-            padding: 10px 20px;
-            margin-left: 10px;
-            height: 40px;
+            border-radius: 25px;
+            padding: 12px 25px;
+            margin-left: 15px;
+            height: 45px;
+            font-size: 16px;
         """)
         self.send_btn.setCursor(QCursor(Qt.PointingHandCursor))
         self.send_btn.clicked.connect(self.send_message)
@@ -812,7 +835,9 @@ class AIAgentApp(QWidget):
         """显示消息气泡"""
         bubble = ChatBubble(sender, message)
         self.chat_layout_inner.addWidget(bubble)
-        self.chat_scroll.verticalScrollBar().setValue
+        self.chat_scroll.verticalScrollBar().setValue(
+            self.chat_scroll.verticalScrollBar().maximum()
+        )
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -822,15 +847,15 @@ if __name__ == "__main__":
             font-family: "Arial", "Microsoft YaHei";
         }
         QScrollBar:vertical {
-            width: 6px;
+            width: 8px;
             background: rgba(0,0,0,5%);
             margin: 0;
-            border-radius: 3px;
+            border-radius: 4px;
         }
         QScrollBar::handle:vertical {
-            background: rgba(0,0,0,20%);
-            min-height: 20px;
-            border-radius: 3px;
+            background: rgba(0,0,0,25%);
+            min-height: 25px;
+            border-radius: 4px;
         }
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
             height: 0;
