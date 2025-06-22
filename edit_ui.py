@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
                             QLabel, QPushButton, QLineEdit, QScrollArea, 
                             QSizePolicy, QMessageBox, QDialog, QFrame, QStackedWidget)
-from PyQt5.QtGui import QFont, QPixmap, QIcon, QPalette, QColor, QCursor
+from PyQt5.QtGui import QFont, QPixmap, QIcon, QPalette, QColor, QCursor, QFontMetrics
 from PyQt5.QtCore import Qt, QTimer, QSize, QPoint
 
 from clothes_edited import InteractiveFashionAssistant, SessionState
@@ -35,7 +35,7 @@ class LoginDialog(QDialog):
         
         # Logo - 放大并居中
         logo_label = QLabel(self)
-        logo_pixmap = QPixmap("logo.png").scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        logo_pixmap = QPixmap("logo.png").scaled(150, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         if not logo_pixmap.isNull():
             logo_label.setPixmap(logo_pixmap)
         else:
@@ -346,7 +346,7 @@ class WelcomeTips(QDialog):
         <h3 style="color: #07C160; font-size: 22px;">小北穿搭助手使用指南</h3>
         <p style="font-size: 16px; margin-top: 10px;"><b>1. 基本功能</b></p>
         <ul style="font-size: 16px; margin-left: 20px;">
-            <li>输入天气信息(如"今天28度晴天")获取穿搭建议</li>
+            <li>获取穿搭建议</li>
             <li>输入"调整/优化+需求"修改推荐方案(如"优化成更正式的风格")</li>
             <li>输入"历史"查看历史记录</li>
             <li>输入"退出"结束对话</li>
@@ -362,8 +362,8 @@ class WelcomeTips(QDialog):
         <p style="font-size: 16px; margin-top: 10px;"><b>3. 交互技巧</b></p>
         <ul style="font-size: 16px; margin-left: 20px;">
             <li>使用"再推荐一些"获取更多选择</li>
-            <li>对推荐不满意时，明确指出问题(如"太花哨了")</li>
-            <li>指定场景(如"面试穿搭")获取针对性建议</li>
+            <li>对推荐不满意时，明确指出问题(如"太花哨了/不适合本蜀黍（x")</li>
+            <li>指定场景(如"面试穿搭/出席顶会（doge")获取针对性建议</li>
         </ul>
         """
         
@@ -404,9 +404,29 @@ class ChatBubble(QWidget):
     def initUI(self, sender, message):
         layout = QHBoxLayout(self)
         
-        label = QLabel(message)
-        label.setWordWrap(True)
-        label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        # label = QLabel(message)
+        # label.setWordWrap(True)
+        # self.message_label = label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        
+        # self.message_label = QLabel(message)
+        
+        self.message_label = QLabel(message)  # 定义 self.message_label
+        self.message_label.setWordWrap(True)
+        self.message_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        
+        
+        # 计算每行显示的最佳字数
+        font = self.message_label.font()
+        font_metrics = QFontMetrics(font)
+        avg_char_width = font_metrics.averageCharWidth()
+        
+        # 设置气泡最大宽度为10-15个汉字宽度
+        max_chars_per_line = 45  # 最多15个汉字
+        min_chars_per_line = 20 # 最少10个汉字
+        
+        # 计算最大宽度范围
+        min_width = min_chars_per_line * avg_char_width
+        max_width = max_chars_per_line * avg_char_width
         
         # 设置气泡样式
         if sender == "user":
@@ -416,18 +436,87 @@ class ChatBubble(QWidget):
             bg_color = "#FFFFFF"
             alignment = Qt.AlignLeft
             
-        label.setStyleSheet(f"""
+        self.message_label.setStyleSheet(f"""
             border-radius: 12px;
             padding: 14px;
             font-size: 16px;
             background-color: {bg_color};
-            max-width: 85%;
+            max-width: {max_width}px;
+
         """)
         
         layout.setAlignment(alignment)
-        layout.addWidget(label)
+        layout.addWidget(self.message_label)
         self.setLayout(layout)
-
+    # def __init__(self, sender, message, parent=None):
+    #     super().__init__(parent)
+    #     self.initUI(sender, message)
+    
+    # def initUI(self, sender, message):
+    #     main_layout = QHBoxLayout(self)
+        
+    #     # 创建头像
+    #     avatar_label = QLabel(self)
+    #     avatar_size = 40  # 头像大小
+        
+    #     if sender == "user":
+    #         avatar_pixmap = QPixmap("user_avatar.png").scaled(avatar_size, avatar_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+    #         if avatar_pixmap.isNull():
+    #             avatar_label.setText("👤")  # 如果找不到图片，使用emoji
+    #             avatar_label.setStyleSheet("font-size: 24px; padding: 5px;")
+    #         else:
+    #             avatar_label.setPixmap(avatar_pixmap)
+    #         main_layout.setAlignment(Qt.AlignRight)
+    #     else:
+    #         avatar_pixmap = QPixmap("agent_avatar.png").scaled(avatar_size, avatar_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+    #         if avatar_pixmap.isNull():
+    #             avatar_label.setText("🤖")  # 如果找不到图片，使用emoji
+    #             avatar_label.setStyleSheet("font-size: 24px; padding: 5px;")
+    #         else:
+    #             avatar_label.setPixmap(avatar_pixmap)
+    #         main_layout.setAlignment(Qt.AlignLeft)
+        
+    #     # 创建消息气泡
+    #     bubble_layout = QHBoxLayout()
+        
+    #     self.message_label = QLabel(message)
+    #     self.message_label.setWordWrap(True)
+    #     self.message_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        
+    #     # 设置气泡样式
+    #     if sender == "user":
+    #         bg_color = "#DCF8C6"
+    #         alignment = Qt.AlignRight
+    #         bubble_layout.addStretch()
+    #     else:
+    #         bg_color = "#FFFFFF"
+    #         alignment = Qt.AlignLeft
+    #         bubble_layout.addWidget(avatar_label)
+        
+    #     # 增加气泡最大宽度，从85%增加到90%
+    #     self.message_label.setStyleSheet(f"""
+    #         border-radius: 12px;
+    #         padding: 14px;
+    #         font-size: 16px;
+    #         background-color: {bg_color};
+    #         max-width: 90%;
+    #     """)
+        
+    #     bubble_layout.addWidget(self.message_label)
+        
+    #     if sender == "user":
+    #         bubble_layout.addWidget(avatar_label)
+    #     else:
+    #         bubble_layout.addStretch()
+        
+    #     main_layout.addLayout(bubble_layout)
+    #     self.setLayout(main_layout)
+    
+    # def get_message_label(self):
+    #     return self.message_label
+    
+    
+    
 class AgentSelectionWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -686,7 +775,7 @@ class AIAgentApp(QWidget):
         # 聊天顶部栏
         top_bar = QFrame(self)
         top_bar.setStyleSheet("background-color: #07C160; color: white; padding: 10px;")
-        top_bar.setFixedHeight(65)
+        top_bar.setFixedHeight(105)
         
         top_bar_layout = QHBoxLayout(top_bar)
         
@@ -697,7 +786,9 @@ class AIAgentApp(QWidget):
         back_btn.clicked.connect(self.show_agent_selection)
         
         self.agent_title_label = QLabel("小北穿搭助手")
-        self.agent_title_label.setStyleSheet("font-size: 20px; font-weight: bold;")
+        self.agent_title_label.setStyleSheet("font-size: 20px; font-weight: bold; ")
+        self.agent_title_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        
         
         top_bar_layout.addWidget(back_btn)
         top_bar_layout.addWidget(self.agent_title_label)
@@ -796,22 +887,219 @@ class AIAgentApp(QWidget):
     
     def start_chat(self):
         # 设置顶部栏标题
+        # agent_names = ["", "小北穿搭助手", "小北运动助手", "小北饮食助手"]
+        # self.agent_title_label.setText(agent_names[self.current_agent])
+        
+        # self.agent_selection_widget.hide()
+        # self.chat_widget.show()
+
+
+
+        # # 根据选择的Agent显示不同的欢迎语
+        # if self.current_agent == 1:
+        #     welcome_messages = [
+        #         "🎉 这里是最懂你的智能穿搭助手小北！我是由传奇debug王yjm开发的颠覆级穿搭推荐agent。","和小北打个招呼吧~"
+        #     ]
+        # elif self.current_agent == 2:
+        #     welcome_messages = [
+        #         "🎉 欢迎使用小北运动助手！今天想进行什么类型的运动？"
+
+        #     ]
+        # elif self.current_agent == 3:
+        #     welcome_messages = [
+        #         "🎉 欢迎使用小北饮食助手！今天想吃点什么？"
+
+        #     ]
+
+        # for message in welcome_messages:
+        #     self.stream_output(message)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        agent_welcome_messages = {
+        1: [
+            "🎉 这里是最懂你的智能穿搭助手小北！我是由传奇debug王yjm开发的颠覆级穿搭推荐agent。",
+            "和小北打个招呼吧~"
+        ],
+        2: [
+            "🎉 欢迎使用小北运动助手！今天想进行什么类型的运动？",
+            "输入你的运动目标(如: 减肥、增肌)获取运动建议"
+        ],
+        3: [
+            "🎉 欢迎使用小北饮食助手！今天想吃点什么？",
+            "输入你的饮食需求(如: 减脂餐、健康早餐)获取饮食建议"
+        ]
+        }
+        self.welcome_messages = agent_welcome_messages.get(self.current_agent, [])
+        self.current_welcome_index = 0
+        # 启动第一条欢迎语的流式输出
+        self.start_next_welcome()
+
+    def start_next_welcome(self):
+        if self.current_welcome_index < len(self.welcome_messages):
+            current_msg = self.welcome_messages[self.current_welcome_index]
+            self.ww_stream_output(current_msg)
+        else:
+            # 所有欢迎语输出完毕，可做其他初始化逻辑
+            pass
+        
+        
+        
+        
+    def ww_stream_output(self, response):
+        self.current_response = response
+        self.current_index = 0
+        # 停止之前的定时器（防止冲突）
+        if hasattr(self, 'timer') and self.timer:
+            self.timer.stop()
+        # 新建定时器
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.ww_update_output)
+        self.timer.start(50)  # 每50ms输出一个字符
+
+    def ww_update_output(self):
+        if self.current_index < len(self.current_response):
+            # 每一个新消息的第一个字符，创建新气泡
+            if self.current_index == 0:
+                self.current_bubble = ChatBubble("assistant", self.current_response[0])
+                self.chat_layout_inner.addWidget(self.current_bubble)
+            else:
+                # 拼接字符到当前气泡
+                label = self.current_bubble.layout().itemAt(0).widget()
+                label.setText(label.text() + self.current_response[self.current_index])
+            
+            self.current_index += 1
+            # 滚动到底部
+            self.chat_scroll.verticalScrollBar().setValue(
+                self.chat_scroll.verticalScrollBar().maximum()
+            )
+        else:
+            # 当前消息流式输出完毕，停止定时器
+            self.timer.stop()
+            # 准备输出下一条欢迎语
+            self.current_welcome_index += 1
+            self.start_next_welcome()  # 递归调用，输出下一条
+        
+
+        # 设置顶部栏标题
         agent_names = ["", "小北穿搭助手", "小北运动助手", "小北饮食助手"]
         self.agent_title_label.setText(agent_names[self.current_agent])
-        
+
         self.agent_selection_widget.hide()
         self.chat_widget.show()
+
+
+    #     agent_welcome_messages = {
+    #         1: [
+    #             "🎉 这里是最懂你的智能穿搭助手小北！",
+    #             "我是由传奇debug王yjm开发的颠覆级穿搭推荐agent。",
+    #             "和小北打个招呼吧~"
+    #         ],
+    #         2: [
+    #             "🎉 欢迎使用小北运动助手！今天想进行什么类型的运动？",
+    #             "输入你的运动目标(如: 减肥、增肌)获取运动建议"
+    #         ],
+    #         3: [
+    #             "🎉 欢迎使用小北饮食助手！今天想吃点什么？",
+    #             "输入你的饮食需求(如: 减脂餐、健康早餐)获取饮食建议"
+    #         ]
+    #     }
         
-        # 根据选择的Agent显示不同的欢迎语
-        if self.current_agent == 1:
-            self.display_message("assistant", "🎉 欢迎使用小北穿搭助手！今天想穿什么风格？")
-            self.display_message("assistant", "输入天气信息(如: 25度晴天)获取穿搭建议，或输入'帮助'查看更多指令")
-        elif self.current_agent == 2:
-            self.display_message("assistant", "🎉 欢迎使用小北运动助手！今天想进行什么类型的运动？")
-            self.display_message("assistant", "输入你的运动目标(如: 减肥、增肌)获取运动建议")
-        elif self.current_agent == 3:
-            self.display_message("assistant", "🎉 欢迎使用小北饮食助手！今天想吃点什么？")
-            self.display_message("assistant", "输入你的饮食需求(如: 减脂餐、健康早餐)获取饮食建议")
+    #     # 获取当前Agent的欢迎消息
+    #     self.welcome_messages = agent_welcome_messages.get(self.current_agent, [])
+    #     self.current_welcome_index = 0
+        
+    #     # 开始显示欢迎消息
+    #     if self.welcome_messages:
+    #         self.w_stream_output(self.welcome_messages[self.current_welcome_index])
+
+    # def w_stream_output(self, response):
+    #     """流式输出回复"""
+    #     self.current_response = response
+    #     self.current_index = 0
+
+    #     # 停止之前的计时器
+    #     if hasattr(self, 'timer') and self.timer:
+    #         self.timer.stop()
+
+    #     # 创建新计时器
+    #     self.timer = QTimer(self)
+    #     self.timer.timeout.connect(self.w_update_output)
+    #     self.timer.start(50)  # 每50ms输出一个字符
+
+    # # def w_update_output(self):
+    # #     """更新流式输出"""
+    # #     if self.current_index < len(self.current_response):
+    # #         # 如果是第一条字符，创建新气泡
+    # #         if self.current_index == 0:
+    # #             self.current_bubble = ChatBubble("assistant", self.current_response[0])
+    # #             self.chat_layout_inner.addWidget(self.current_bubble)
+    # #         # 否则追加到现有气泡
+    # #         else:
+    # #             label = self.current_bubble.layout().itemAt(0).widget()
+    # #             label.setText(label.text() + self.current_response[self.current_index])
+
+    # #         self.current_index += 1
+    # #         # 滚动到底部
+    # #         self.chat_scroll.verticalScrollBar().setValue(
+    # #             self.chat_scroll.verticalScrollBar().maximum()
+    # #         )
+    # #     else:
+    # #         # 当前消息显示完毕，停止计时器
+    # #         self.timer.stop()
+            
+    # #         # 显示下一条欢迎消息
+    # #         self.current_welcome_index += 1
+    # #         if self.current_welcome_index < len(self.welcome_messages):
+    # #             # 使用单次定时器延迟显示下一条消息，避免界面卡顿
+    # #             QTimer.singleShot(300, lambda: self.w_stream_output(
+    # #                 self.welcome_messages[self.current_welcome_index]))
+    
+    
+    
+    # def w_update_output(self):
+    #     """更新流式输出"""
+    #     if self.current_index < len(self.current_response):
+    #         # 如果是第一条字符，创建新气泡
+    #         if self.current_index == 0:
+    #             self.current_bubble = ChatBubble("assistant", self.current_response[0])
+    #             self.chat_layout_inner.addWidget(self.current_bubble)
+    #         # 否则追加到现有气泡
+    #         else:
+    #             label = self.current_bubble.layout().itemAt(0).widget()
+    #             label.setText(label.text() + self.current_response[self.current_index])
+
+    #         self.current_index += 1
+    #         # 滚动到底部
+    #         self.chat_scroll.verticalScrollBar().setValue(
+    #             self.chat_scroll.verticalScrollBar().maximum()
+    #         )
+    #     else:
+    #         # 当前消息显示完毕，停止计时器
+    #         self.timer.stop()
+            
+    #         # 显示下一条欢迎消息
+    #         self.current_welcome_index += 1
+    #         if self.current_welcome_index < len(self.welcome_messages):
+    #             # 计算当前消息的总显示时间，根据消息长度设置合理延迟
+    #             # 假设每个字符需要50ms显示，再增加200ms缓冲
+    #             message_length = len(self.current_response)
+    #             delay_time = message_length * 50 + 200
+                
+    #             # 使用单次定时器延迟显示下一条消息，确保界面渲染完成
+    #             QTimer.singleShot(delay_time, lambda: self.w_stream_output(
+    #                 self.welcome_messages[self.current_welcome_index]))
+    #         else:
+    #             # 所有欢迎消息显示完毕，重置索引
+    #             self.current_welcome_index = 0
     
     def load_user_history(self, username):
         """加载用户历史记录"""
@@ -825,6 +1113,8 @@ class AIAgentApp(QWidget):
             
         self.display_message("user", message)
         self.message_input.clear()
+
+
         
         # 处理用户输入
         self.process_user_input(message)
@@ -841,6 +1131,9 @@ class AIAgentApp(QWidget):
             response = self.assistant.process_user_input(self.user_id, message)
         else:
             # 其他Agent的处理逻辑可以在这里添加
+            
+            # need add
+            
             response = f"[{self.current_agent}] 功能开发中，暂不支持复杂交互"
             
         self.stream_output(response)
