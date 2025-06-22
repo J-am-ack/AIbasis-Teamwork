@@ -527,10 +527,11 @@ class AIAgentApp(QWidget):
         self.initUI()
     
     def initUI(self):
+        
         # 主窗口设置
-        self.setWindowTitle('PKU Survivor')
+        self.setWindowTitle('Welcome to PKU Survivor')  # 保持原应用名称
         self.setGeometry(100, 100, 1024, 780)
-        font = QFont("Arial", 12)
+        font = QFont("Arial", 10)
         self.setFont(font)
         
         # 主布局
@@ -540,11 +541,54 @@ class AIAgentApp(QWidget):
         # 创建欢迎界面容器
         self.welcome_widget = QWidget()
         welcome_layout = QVBoxLayout(self.welcome_widget)
-        welcome_layout.setAlignment(Qt.AlignCenter)  # 整体内容居中
+        welcome_layout.setAlignment(Qt.AlignTop)  # 内容靠上排列
         
-        # 欢迎界面Logo - 放大并居中，无背景
+        # 欢迎界面标题
+        title_frame = QFrame(self)
+        title_frame.setStyleSheet("background-color: #07C160;")
+        title_frame.setFixedHeight(200)
+        
+        title_layout = QVBoxLayout(title_frame)
+        title_layout.setAlignment(Qt.AlignCenter)
+        
+        title_label = QLabel("PKU Survivor")
+        title_label.setStyleSheet("color: white; font-size: 48px; font-weight: bold;")
+        title_label.setAlignment(Qt.AlignCenter)
+        
+        subtitle_label = QLabel("智能助手平台")
+        subtitle_label.setStyleSheet("color: white; font-size: 24px; margin-top: 10px;")
+        subtitle_label.setAlignment(Qt.AlignCenter)
+        
+        title_layout.addWidget(title_label)
+        title_layout.addWidget(subtitle_label)
+        
+        # 欢迎界面内容
+        content_frame = QFrame(self)
+        content_frame.setStyleSheet("background-color: white;")
+        
+        content_layout = QVBoxLayout(content_frame)
+        content_layout.setAlignment(Qt.AlignCenter)
+        content_layout.setSpacing(40)
+        
+        
+        # # 主窗口设置
+        # self.setWindowTitle('PKU Survivor')
+        # self.setGeometry(100, 100, 1024, 780)
+        # font = QFont("Arial", 12)
+        # self.setFont(font)
+        
+        # # 主布局
+        # main_layout = QVBoxLayout(self)
+        # main_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # # 创建欢迎界面容器
+        # self.welcome_widget = QWidget()
+        # welcome_layout = QVBoxLayout(self.welcome_widget)
+        # welcome_layout.setAlignment(Qt.AlignCenter)  # 整体内容居中
+        
+        # # 欢迎界面Logo - 放大并居中
         logo_frame = QFrame(self)
-        logo_frame.setStyleSheet("background-color: transparent;")
+        logo_frame.setStyleSheet("background-color: white;")
         
         logo_layout = QVBoxLayout(logo_frame)
         logo_layout.setAlignment(Qt.AlignCenter)
@@ -553,38 +597,38 @@ class AIAgentApp(QWidget):
         logo_pixmap = QPixmap("logo.png").scaled(400, 400, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         if not logo_pixmap.isNull():
             logo_label.setPixmap(logo_pixmap)
-        else:
-            logo_label.setText("PKU Survivor")
-            logo_label.setStyleSheet("color: #07C160; font-size: 48px; font-weight: bold;")
-        logo_label.setAlignment(Qt.AlignCenter)
+        # else:
+        #     logo_label.setText("PKU Survivor")
+        #     logo_label.setStyleSheet("color: #07C160; font-size: 48px; font-weight: bold;")
+        # logo_label.setAlignment(Qt.AlignCenter)
         
         logo_layout.addWidget(logo_label)
         
-        # 欢迎界面标题
-        title_frame = QFrame(self)
-        title_frame.setStyleSheet("background-color: #07C160;")
+        # # 欢迎界面标题
+        # title_frame = QFrame(self)
+        # title_frame.setStyleSheet("background-color: #07C160;")
         
-        title_layout = QVBoxLayout(title_frame)
-        title_layout.setAlignment(Qt.AlignCenter)
+        # title_layout = QVBoxLayout(title_frame)
+        # title_layout.setAlignment(Qt.AlignCenter)
         
-        title_label = QLabel("Welcome to PKU survivor!")
-        title_label.setStyleSheet("color: white; font-size: 42px; font-weight: bold;")
-        title_label.setAlignment(Qt.AlignCenter)
+        # title_label = QLabel("Welcome to PKU survivor!")
+        # title_label.setStyleSheet("color: white; font-size: 42px; font-weight: bold;")
+        # title_label.setAlignment(Qt.AlignCenter)
         
-        subtitle_label = QLabel("专属PKUers的生活助手，从此打造个性化生活方式")
-        subtitle_label.setStyleSheet("color: #333333; font-size: 24px; margin-top: 15px;")
-        subtitle_label.setAlignment(Qt.AlignCenter)
+        # subtitle_label = QLabel("专属PKUers的生活助手，从此打造个性化生活方式")
+        # subtitle_label.setStyleSheet("color: #333333; font-size: 24px; margin-top: 15px;")
+        # subtitle_label.setAlignment(Qt.AlignCenter)
         
-        title_layout.addWidget(title_label)
-        title_layout.addWidget(subtitle_label)
+        # title_layout.addWidget(title_label)
+        # title_layout.addWidget(subtitle_label)
         
-        # 欢迎界面内容
-        content_frame = QFrame(self)
-        content_frame.setStyleSheet("background-color: transparent;")
+        # # 欢迎界面内容
+        # content_frame = QFrame(self)
+        # content_frame.setStyleSheet("background-color: transparent;")
         
-        content_layout = QVBoxLayout(content_frame)
-        content_layout.setAlignment(Qt.AlignCenter)
-        content_layout.setSpacing(50)
+        # content_layout = QVBoxLayout(content_frame)
+        # content_layout.setAlignment(Qt.AlignCenter)
+        # content_layout.setSpacing(50)
         
         # 功能介绍
         features_frame = QFrame(self)
@@ -625,10 +669,11 @@ class AIAgentApp(QWidget):
         content_layout.addStretch()
         
         welcome_layout.addStretch()
-        welcome_layout.addWidget(logo_frame)
+        # welcome_layout.addWidget(logo_frame)
         welcome_layout.addWidget(title_frame)
         welcome_layout.addWidget(content_frame)
         welcome_layout.addStretch()
+        welcome_layout.addWidget(logo_frame)
         
         # 创建Agent选择界面
         self.agent_selection_widget = AgentSelectionWidget(self)
