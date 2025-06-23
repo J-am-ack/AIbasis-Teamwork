@@ -786,7 +786,7 @@ class AIAgentApp(QWidget):
         back_btn.clicked.connect(self.show_agent_selection)
         
         self.agent_title_label = QLabel("小北穿搭助手")
-        self.agent_title_label.setStyleSheet("font-size: 20px; font-weight: bold; ")
+        self.agent_title_label.setStyleSheet("font-size: 25px; font-weight: bold; ")
         self.agent_title_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         
         
@@ -918,17 +918,17 @@ class AIAgentApp(QWidget):
         
         
         
-                
-        # # 创建聊天内容的内部widget，并设置为类的属性（仅修改了这一行）
-        # self.chat_layout_inner_widget = QWidget()
         
         
         
+        
+        
+        # 真的拼尽全力无法战胜这个流式输出的显示，只能打残版欢迎语了/(ㄒoㄒ)/~~
+        # 第一行被删掉（
         
         
         agent_welcome_messages = {
         1: [
-            "🎉 这里是最懂你的智能穿搭助手小北！我是由传奇debug王yjm开发的颠覆级穿搭推荐agent。",
             "和小北打个招呼吧~"
         ],
         2: [
@@ -967,6 +967,57 @@ class AIAgentApp(QWidget):
         self.timer.timeout.connect(self.ww_update_output)
         self.timer.start(50)  # 每50ms输出一个字符
 
+    # def ww_update_output(self):
+    #     if self.current_index < len(self.current_response):
+    #         # 每一个新消息的第一个字符，创建新气泡
+    #         if self.current_index == 0:
+    #             self.current_bubble = ChatBubble("assistant", self.current_response[0])
+    #             self.chat_layout_inner.addWidget(self.current_bubble)
+    #         else:
+    #             # 拼接字符到当前气泡
+    #             label = self.current_bubble.layout().itemAt(0).widget()
+    #             label.setText(label.text() + self.current_response[self.current_index])
+            
+    #         self.current_index += 1
+            
+            
+    #         QApplication.processEvents()
+    #         # 关键：强制气泡布局更新并计算高度
+    #         self.current_bubble.layout().update()
+    #         self.current_bubble.adjustSize()
+            
+    #         # 滚动到底部
+    #         self.chat_scroll.verticalScrollBar().setValue(
+    #             self.chat_scroll.verticalScrollBar().maximum()
+    #         )
+    #     else:
+    #         # 当前消息流式输出完毕，停止定时器
+    #         self.timer.stop()
+    #         # 准备输出下一条欢迎语
+    #         self.current_welcome_index += 1
+    #         self.start_next_welcome()  # 递归调用，输出下一条
+    
+    # def ww_update_output(self):
+    #     if self.current_index < len(self.current_response):
+    #         # 每一个新消息的第一个字符，创建新气泡
+    #         if self.current_index == 0:
+    #             self.current_bubble = ChatBubble("assistant", self.current_response[0])
+    #             self.chat_layout_inner.addWidget(self.current_bubble)
+    #         else:
+    #             # 拼接字符到当前气泡
+    #             current_text = self.current_bubble.message_label.text()
+    #             self.current_bubble.message_label.setText(current_text + self.current_response[self.current_index])
+    #         self.current_index += 1
+    #     else:
+    #         # 当前欢迎语输出完毕，停止定时器
+    #         self.timer.stop()
+    #         # 滚动到聊天区域底部
+    #         self.chat_scroll.verticalScrollBar().setValue(self.chat_scroll.verticalScrollBar().maximum())
+    #         # 处理下一条欢迎语
+    #         self.current_welcome_index += 1
+    #         self.start_next_welcome()
+       
+       
     def ww_update_output(self):
         if self.current_index < len(self.current_response):
             # 每一个新消息的第一个字符，创建新气泡
@@ -975,89 +1026,36 @@ class AIAgentApp(QWidget):
                 self.chat_layout_inner.addWidget(self.current_bubble)
             else:
                 # 拼接字符到当前气泡
-                label = self.current_bubble.layout().itemAt(0).widget()
-                label.setText(label.text() + self.current_response[self.current_index])
-            
+                current_text = self.current_bubble.message_label.text()
+                self.current_bubble.message_label.setText(current_text + self.current_response[self.current_index])
             self.current_index += 1
-            
-            
-            QApplication.processEvents()
-            # 关键：强制气泡布局更新并计算高度
-            self.current_bubble.layout().update()
-            self.current_bubble.adjustSize()
-            
-            # 滚动到底部
-            self.chat_scroll.verticalScrollBar().setValue(
-                self.chat_scroll.verticalScrollBar().maximum()
-            )
+            # 更新布局
+            self.chat_widget.layout().update()
+            # 滚动到最新消息
+            self.chat_scroll.verticalScrollBar().setValue(self.chat_scroll.verticalScrollBar().maximum())
         else:
-            # 当前消息流式输出完毕，停止定时器
+            # 当前欢迎语输出完毕，停止定时器
             self.timer.stop()
-            # 准备输出下一条欢迎语
+            
+                    
+            
+            
+            # 滚动到聊天区域底部
+            self.chat_scroll.verticalScrollBar().setValue(self.chat_scroll.verticalScrollBar().maximum())
+            # QTimer.singleShot(100)
+            
+            # 处理下一条欢迎语
             self.current_welcome_index += 1
-            self.start_next_welcome()  # 递归调用，输出下一条
-    
-    
-    # def start_next_welcome(self):
-    #     """开始下一条欢迎语的流式输出"""
-    #     if self.current_welcome_index < len(self.welcome_messages):
-    #         self.current_welcome_text = self.welcome_messages[self.current_welcome_index]
-    #         self.current_welcome_index += 1
-    #         self.current_char_index = 0  # 初始化字符索引
+            self.start_next_welcome() 
             
-    #         # 创建消息气泡
-    #         self.current_bubble = ChatBubble("assistant", "")
-    #         self.chat_layout_inner.addWidget(self.current_bubble)
-    #         self.current_label = self.current_bubble.layout().itemAt(0).widget()
             
-    #         # 启动定时器进行流式输出
-    #         self.ww_timer = QTimer(self)
-    #         self.ww_timer.timeout.connect(self.ww_update_output)
-    #         self.ww_timer.start(50)  # 每50ms输出一个字符
-    #     else:
-    #         # 所有欢迎语输出完毕
-    #         pass
 
-    # def ww_update_output(self):
-    #     """更新欢迎语的流式输出"""
-    #     # 检查 current_char_index 是否存在
-    #     if not hasattr(self, 'current_char_index'):
-    #         print("Error: current_char_index not defined")
-    #         self.ww_timer.stop()
-    #         return
-            
-    #     if self.current_char_index < len(self.current_welcome_text):
-    #         # 追加一个字符
-    #         current_text = self.current_label.text()
-    #         self.current_label.setText(current_text + self.current_welcome_text[self.current_char_index])
-    #         self.current_char_index += 1
-            
-    #         # 强制更新布局
-    #         self.current_bubble.updateGeometry()
-    #         self.current_bubble.adjustSize()
-    #         self.chat_layout_inner_widget.adjustSize()
-            
-    #         # 滚动到底部
-    #         self.chat_scroll.verticalScrollBar().setValue(
-    #             self.chat_scroll.verticalScrollBar().maximum()
-    #         )
-    #     else:
-    #         # 当前欢迎语输出完毕，停止定时器
-    #         self.ww_timer.stop()
-            
-    #         # 确保最后一个字符显示完整
-    #         QApplication.processEvents()  # 处理所有pending的UI事件
-    #         self.current_bubble.updateGeometry()
-    #         self.current_bubble.adjustSize()
-    #         self.chat_layout_inner_widget.adjustSize()
-            
-    #         # 再次滚动到底部，确保显示完整
-    #         self.chat_scroll.verticalScrollBar().setValue(
-    #             self.chat_scroll.verticalScrollBar().maximum()
-    #         )
-            
-    #         # 等待一段时间后输出下一条欢迎语
-    #         QTimer.singleShot(1000, self.start_next_welcome)
+        # 设置顶部栏标题
+        agent_names = ["", "小北穿搭助手", "小北运动助手", "小北饮食助手"]
+        self.agent_title_label.setText(agent_names[self.current_agent])
+
+        self.agent_selection_widget.hide()
+        self.chat_widget.show()
 
 
     #     agent_welcome_messages = {
