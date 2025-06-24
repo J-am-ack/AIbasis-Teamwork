@@ -164,7 +164,7 @@ class InteractiveFashionAssistant:
 3. 平时喜欢什么穿搭风格？（如：休闲、商务、潮流、文艺、简约等）
 4. 所在城市？
 5. 职业？
-6. 院系？（注意请麻烦动动小手输入全名qwq，小北不懂缩写/简称~）
+6. 院系？（注意请麻烦动动小手输入全名qwq，小北不懂缩写/简称~）（如果没有的话可以输入“无”哦~）
 
 
 
@@ -605,7 +605,7 @@ class InteractiveFashionAssistant:
             profile['style_pref'] = ','.join(found_styles)
         
         # 提取职业
-        occupations = ['学生', '程序员', '教员', '教授', '科研人员', '医生', '律师', '设计师', '经理', '公务员', '创业者', '博士', '研究生','本科生']
+        occupations = ['学生', '程序员', '教员', '教授', '老师', '教师','科研人员', '医生', '律师', '设计师', '经理', '公务员', '创业者', '博士', '研究生','本科生']
         for occupation in occupations:
             if occupation in text:
                 profile['occupation'] = occupation
@@ -649,7 +649,8 @@ class InteractiveFashionAssistant:
     "国家发展研究院",
     "前沿交叉研究院",
     "医学部",
-    "历史学系"
+    "历史学系",
+    "无"
     ]
         for college in colleges:
             if college in text:

@@ -347,21 +347,21 @@ class WelcomeTips(QDialog):
         <p style="font-size: 16px; margin-top: 10px;"><b>1. 基本功能</b></p>
         <ul style="font-size: 16px; margin-left: 20px;">
             <li>获取穿搭建议</li>
-            <li>输入"调整/优化+需求"修改推荐方案(如"优化成更正式的风格")</li>
-            <li>输入"历史"查看历史记录</li>
-            <li>输入"退出"结束对话</li>
+            <li>调整/优化需求，修改推荐方案(如"优化成更正式的风格")</li>
+            <li>命令行输入"help"查看一些使用贴士</li>
+            <li>命令行输入"quit"结束对话</li>
         </ul>
         
         <p style="font-size: 16px; margin-top: 10px;"><b>2. 高级功能</b></p>
         <ul style="font-size: 16px; margin-left: 20px;">
-            <li>输入"保存方案"保存当前穿搭</li>
-            <li>输入"我的方案"查看已保存的穿搭</li>
+            <li>自动保存方案和对话历史</li>
+            <li>能</li>
             <li>输入"偏好设置"调整个人穿搭偏好</li>
         </ul>
         
         <p style="font-size: 16px; margin-top: 10px;"><b>3. 交互技巧</b></p>
         <ul style="font-size: 16px; margin-left: 20px;">
-            <li>使用"再推荐一些"获取更多选择</li>
+            <li>使用"再推荐一些"/"多推荐一点"获取更多选择</li>
             <li>对推荐不满意时，明确指出问题(如"太花哨了/不适合本蜀黍（x")</li>
             <li>指定场景(如"面试穿搭/出席顶会（doge")获取针对性建议</li>
         </ul>
