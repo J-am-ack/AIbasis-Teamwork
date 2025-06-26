@@ -3,6 +3,7 @@ import json
 from typing import List, Dict, Optional
 import random
 
+from ui_with_image import ImageService
 
 
 
@@ -312,8 +313,9 @@ class ClothingDBQuery:
             conn.close()
 
 class ClothingMatcher:
-    def __init__(self, db_query: ClothingDBQuery):
+    def __init__(self, db_query: ClothingDBQuery, image_p: ImageService):
         self.db_query = db_query
+        self.images = image_p
     
     def extract_keywords_from_qwen_response(self, qwen_response: str) -> List[str]:
         """从Qwen回复中提取关键词"""
@@ -457,6 +459,7 @@ class ClothingMatcher:
             return "抱歉，暂时没有找到合适的院衫推荐。"
         
         recommendation = f"""
+🎯 **院衫推荐**
 **{clothing_item['name']}**
 - 所属学院：{clothing_item.get('college', '未知')}
 - 风格：{clothing_item['style']}
@@ -466,43 +469,45 @@ class ClothingMatcher:
 - 适宜天气：{clothing_item['weather_conditions']}
 
 
+
 {clothing_item['description']}
 """
         
         if clothing_item.get('tags'):
             recommendation += f"\n🏷️ 标签：{', '.join(clothing_item['tags'])}"
 
-            
+        # if clothing_item.get('image_path'):
+        #     self.images.show_college_shirt_image(clothing_item['id'])
         return recommendation
     
     
     
-    def format_clothing_recommendation(self, clothing_item: Dict) -> str:
-        """格式化院衫推荐信息"""
-        if not clothing_item:
-            return "抱歉，暂时没有找到合适的院衫推荐。"
+#     def format_clothing_recommendation(self, clothing_item: Dict) -> str:
+#         """格式化院衫推荐信息"""
+#         if not clothing_item:
+#             return "抱歉，暂时没有找到合适的院衫推荐。"
         
-        recommendation = f"""
-🎯 **院衫推荐**
+#         recommendation = f"""
+# 🎯 **院衫推荐**
 
-**{clothing_item['name']}**
-- 风格：{clothing_item['style']}
-- 颜色：{clothing_item['color']}
-- 适合季节：{clothing_item['season']}
-- 适宜温度：{clothing_item['temp_min']}°C - {clothing_item['temp_max']}°C
-- 适宜天气：{clothing_item['weather_conditions']}
+# **{clothing_item['name']}**
+# - 风格：{clothing_item['style']}
+# - 颜色：{clothing_item['color']}
+# - 适合季节：{clothing_item['season']}
+# - 适宜温度：{clothing_item['temp_min']}°C - {clothing_item['temp_max']}°C
+# - 适宜天气：{clothing_item['weather_conditions']}
 
-{clothing_item['description']}
-"""
+# {clothing_item['description']}
+# """
         
-        if clothing_item.get('tags'):
-            recommendation += f"\n标签：{', '.join(clothing_item['tags'])}"
+#         if clothing_item.get('tags'):
+#             recommendation += f"\n标签：{', '.join(clothing_item['tags'])}"
         
 
             
-        return recommendation
+#         return recommendation
     
-    def get_clothing_by_category(self, category: str, limit: int = 3) -> List[Dict]:
+    def get_clothing_by_category(self, category: str, limit: int = 1) -> List[Dict]:
         """根据类别获取院衫"""
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -536,7 +541,7 @@ class ClothingMatcher:
             }
             clothing_items.append(item)
             
-        return clothing_items
+        return clothing_items[0]
     
     def get_random_clothing(self, count: int = 1) -> List[Dict]:
         """随机获取院衫"""

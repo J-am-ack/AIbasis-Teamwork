@@ -11,6 +11,8 @@ from enum import Enum
 import college_search
 
 
+from ui_with_image import ImageService
+
 # 用env文件实现了安全的api_key管理
 from dotenv import load_dotenv
 load_dotenv()
@@ -41,6 +43,7 @@ class UserSession:
         self.selected_option = None
         self.feedback_score = None
         self.refinement_requests = []
+
         
     def add_message(self, role: str, content: str):
         """添加对话消息"""
@@ -66,11 +69,14 @@ class InteractiveFashionAssistant:
         self.sessions = {}
         self.conn, self.cursor = self.init_database()
         self.wrongtime = 0  # 初始化 wrongtime 变量
+
         
         
         # 初始化院衫查询和匹配器
         self.db_query = college_search.ClothingDBQuery(db_path)
-        self.clothing_matcher = college_search.ClothingMatcher(self.db_query)
+        self.clothing_matcher = college_search.ClothingMatcher(self.db_query, image_p=ImageService)
+        
+
         
     def init_database(self):
         """初始化数据库"""
@@ -269,6 +275,9 @@ class InteractiveFashionAssistant:
 🔄 要求调整某个方案（如：方案2能换个颜色吗？）
    直接告诉我你的想法和需求"""
         
+        
+        # self.images.show_college_shirt_image
+        
         return response
     
     def handle_recommendation_feedback(self, session: UserSession, user_input: str) -> str:
@@ -449,7 +458,7 @@ class InteractiveFashionAssistant:
                 else:
                     response = f"😅 {rating}分，看来还有改进空间。能告诉我哪里不满意吗？"
                 
-                response += "\n\n还有其他想尝试的搭配吗？或者想要什么样的风格？"
+                response += "\n\n还有其他想尝试的搭配或风格吗？"
                 
                 # 重置状态，准备下一轮对话
                 # session.state = SessionState.GENERAL_CHAT
@@ -1128,6 +1137,42 @@ class InteractiveFashionAssistant:
         
     #     return parsed_results
     
+    
+    def prepare_image(self, session:UserSession) -> int:
+        prompt = self.build_smart_prompt(session)
+        model_type = os.getenv('MODEL_TYPE', 'qwen')
+        api_key = os.getenv('DASHBOARD_API_KEY')
+        
+        # 1. 获取AI推荐文本
+        recommendations_text = self.generate_recommendation(prompt, model_type, api_key)
+        
+        
+        user_college = session.context['user_profile']['college']
+        if not user_college:
+            print("⚠️ 用户院系信息未找到，将显示所有院衫")
+            c_re += "⚠️ 用户院系信息未找到，将显示所有院衫"
+        # 3. 调用院衫匹配，传入院系信息
+        try:
+            recommended_clothing = self.clothing_matcher.select_matching_clothing_by_college(
+                ai_response=recommendations_text,
+                user_query=prompt,
+                college=user_college
+            )
+            
+            instead_clothing = self.clothing_matcher.select_matching_clothing(
+                qwen_response=recommendations_text,
+                user_query=prompt                
+            )
+            if recommended_clothing:
+                return recommended_clothing['id']
+            else:
+                return instead_clothing['id']
+            
+        except Exception as e:
+            print(f"❌ 院衫匹配过程出错：{e}")
+            c_re += "❌ 院衫匹配过程出错：{e} , 暂时无法提供院衫推荐"
+            recommended_clothing = None
+            clothing_recommendation = "暂时无法提供院衫推荐"
     
     def generate_college_rec(self, session: UserSession) -> List[Dict]:
         

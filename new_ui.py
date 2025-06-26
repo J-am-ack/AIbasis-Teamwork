@@ -7,6 +7,8 @@ from PyQt5.QtCore import Qt, QTimer, QSize, QPoint
 
 from clothes_edited import InteractiveFashionAssistant, SessionState
 
+from ui_with_image import ImageService
+
 class LoginDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -355,8 +357,8 @@ class WelcomeTips(QDialog):
         <p style="font-size: 16px; margin-top: 10px;"><b>2. 高级功能</b></p>
         <ul style="font-size: 16px; margin-left: 20px;">
             <li>自动保存方案和对话历史</li>
-            <li>能</li>
-            <li>输入"偏好设置"调整个人穿搭偏好</li>
+            <li>能调用强大的数据库</li>
+            <li>拥有科学严谨完善的匹配逻辑</li>
         </ul>
         
         <p style="font-size: 16px; margin-top: 10px;"><b>3. 交互技巧</b></p>
@@ -522,6 +524,8 @@ class AgentSelectionWidget(QWidget):
         super().__init__(parent)
         self.parent = parent
         self.initUI()
+        
+        
     
     def initUI(self):
         layout = QVBoxLayout(self)
@@ -604,6 +608,8 @@ class AgentSelectionWidget(QWidget):
         
         self.setLayout(layout)
 
+import sqlite3
+
 class AIAgentApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -614,6 +620,10 @@ class AIAgentApp(QWidget):
         self.timer = None
         self.current_agent = None
         self.initUI()
+        
+        # 连接到SQLite数据库
+        self.conn = sqlite3.connect('clothing_db.sqlite')
+        self.cursor = self.conn.cursor()
     
     def initUI(self):
         
@@ -1190,6 +1200,11 @@ class AIAgentApp(QWidget):
         # 这里根据不同的Agent调用不同的处理函数
         if self.current_agent == 1:
             response = self.assistant.process_user_input(self.user_id, message)
+            if("🎯 **院衫推荐**" in response):
+                now_session = self.assistant.get_or_create_session(self.user_id)
+                now_id  = self.assistant.prepare_image(now_session)
+                print(now_id)
+                self.show_college_shirt_image(now_id)
         else:
             # 其他Agent的处理逻辑可以在这里添加
             
@@ -1198,6 +1213,39 @@ class AIAgentApp(QWidget):
             response = f"[{self.current_agent}] 功能开发中，暂不支持复杂交互"
             
         self.stream_output(response)
+    
+    
+    def get_image_path(self, shirt_id):
+        """从数据库获取图片路径"""
+        conn = sqlite3.connect("clothing_db.sqlite")
+        cursor = conn.cursor()
+        cursor.execute("SELECT image_path FROM clothing_items WHERE id=?", (shirt_id,))
+        result = cursor.fetchone()
+        conn.close()
+        return result[0] if result else None
+    
+    
+    def show_college_shirt_image(self, shirt_id):
+        
+        result = self.get_image_path(shirt_id)
+        
+
+        if result:
+            print("有结果")
+            image_filename = result[0]
+            # 加载院衫图片
+            pixmap = QPixmap(image_filename)
+            if not pixmap.isNull():
+                # 调整图片大小
+                print("下面应输出图片")
+                pixmap = pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                # 创建图片标签
+                image_label = QLabel()
+                image_label.setPixmap(pixmap)
+                # 添加到聊天布局
+                self.chat_layout_inner.addWidget(image_label)
+                # 滚动到最新消息
+                self.chat_scroll.verticalScrollBar().setValue(self.chat_scroll.verticalScrollBar().maximum())
     
     def stream_output(self, response):
         """流式输出回复"""
