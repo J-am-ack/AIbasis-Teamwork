@@ -7,10 +7,10 @@ from openai import OpenAI
 
 app = Flask(__name__)
 app.secret_key = 'pku_dining_planner_secret_key'
-
+d_key = os.getenv('dhj_key')
 # 初始化OpenAI客户端
 client = OpenAI(
-    api_key="sk-c9cc12071c1642e0829f91335ba50c56", 
+    api_key= d_key, 
     base_url="https://api.deepseek.com", 
     http_client=httpx.Client(verify=False)
 )
