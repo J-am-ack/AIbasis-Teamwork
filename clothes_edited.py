@@ -608,7 +608,7 @@ class InteractiveFashionAssistant:
                 break
         
         # 提取风格偏好
-        styles = ['休闲', '商务', '潮流', '时尚', '清新','文艺', '运动', '甜美', '酷帅', '简约', '复古', '街头', '性感', '可爱', '萌', '国风', '抽象', '赛博朋克', '科技']
+        styles = ['休闲', '商务', '潮流', '时尚', '清新','文艺', '运动', '甜美', '酷帅', '帅气', '简约', '复古', '街头', '性感', '可爱', '萌', '国风', '抽象', '赛博朋克', '科技']
         found_styles = [style for style in styles if style in text]
         if found_styles:
             profile['style_pref'] = ','.join(found_styles)
@@ -1172,7 +1172,8 @@ class InteractiveFashionAssistant:
             print(f"❌ 院衫匹配过程出错：{e}")
             c_re += "❌ 院衫匹配过程出错：{e} , 暂时无法提供院衫推荐"
             recommended_clothing = None
-            clothing_recommendation = "暂时无法提供院衫推荐"
+            return None
+
     
     def generate_college_rec(self, session: UserSession) -> List[Dict]:
         

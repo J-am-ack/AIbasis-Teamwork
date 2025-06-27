@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>确认信息 - 北大智能饮食规划系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .btn-next {
+            background: #4CAF50;
+            font-size: 18px;
+            padding: 15px 30px;
+            position: relative;
+            animation: pulse 2s infinite;
+            border: none;
+        }
+        
+        .btn-next:hover {
+            background: #45a049;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-primary text-white text-center py-4">
+        <h1>北大智能饮食规划系统</h1>
+        <p>确认您的信息，获取专属饮食推荐</p>
+    </header>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-10 mx-auto">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0">确认您的信息</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <p><strong>请确认您的个人信息和课表安排是否正确。</strong> 如需修改，请点击相应的编辑按钮。</p>
+                        </div>
+
+                        <!-- 个人信息摘要 -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h3 class="mb-0">个人信息</h3>
+                                <a href="{{ url_for('profile') }}" class="btn btn-outline-primary btn-sm">编辑</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>姓名:</strong> {{ user_info.get('name', '未填写') }}</p>
+                                        <p><strong>年龄:</strong> {{ user_info.get('age', '未填写') }}</p>
+                                        <p><strong>性别:</strong> {{ user_info.get('gender', '未填写') }}</p>
+                                        <p><strong>身高:</strong> {{ user_info.get('height', '未填写') }} cm</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>体重:</strong> {{ user_info.get('weight', '未填写') }} kg</p>
+                                        <p><strong>活动水平:</strong> {{ user_info.get('activity_level', '未填写') }}</p>
+                                        <p><strong>健康目标:</strong> {{ user_info.get('health_goal', '未填写') }}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p><strong>饮食限制:</strong> {{ user_info.get('dietary_restrictions', '无') }}</p>
+                                    <p><strong>饮食偏好:</strong> {{ user_info.get('preferences', '无') }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 营养需求摘要 -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h3 class="mb-0">营养需求</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>每日热量:</strong> {{ nutrition_needs.get('daily_calories', '未计算') }} 卡路里</p>
+                                        <p><strong>蛋白质:</strong> {{ nutrition_needs.get('protein', '未计算') }} 克</p>
+                                        <p><strong>脂肪:</strong> {{ nutrition_needs.get('fat', '未计算') }} 克</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>碳水化合物:</strong> {{ nutrition_needs.get('carbs', '未计算') }} 克</p>
+                                        <p><strong>膳食纤维:</strong> {{ nutrition_needs.get('fiber', '未计算') }} 克</p>
+                                        <p><strong>BMI指数:</strong> {{ nutrition_needs.get('bmi', '未计算') }}</p>
+                                    </div>
+                                </div>
+                                {% if nutrition_needs.get('suggestions') %}
+                                <div class="alert alert-warning mt-3">
+                                    <strong>健康建议:</strong>
+                                    <ul class="mb-0">
+                                        {% for suggestion in nutrition_needs.get('suggestions', []) %}
+                                            <li>{{ suggestion }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- 课表摘要 -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h3 class="mb-0">课表安排</h3>
+                                <a href="{{ url_for('schedule') }}" class="btn btn-outline-primary btn-sm">编辑</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>星期</th>
+                                                <th>课程数量</th>
+                                                <th>时间范围</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for day, classes in schedule.items() %}
+                                            <tr>
+                                                <td>{{ day }}</td>
+                                                <td>{{ classes|length }}</td>
+                                                <td>
+                                                    {% if classes %}
+                                                        {% set first_class = classes[0] %}
+                                                        {% set last_class = classes[-1] %}
+                                                        {{ first_class.start_time }} - {{ last_class.end_time }}
+                                                    {% else %}
+                                                        无课程
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- 详细课表信息 -->
+                                <div class="mt-4">
+                                    <h4>详细课程安排</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>时间</th>
+                                                    <th>课程名称</th>
+                                                    <th>地点</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for day, classes in schedule.items() %}
+                                                    {% if classes %}
+                                                        <tr class="table-secondary">
+                                                            <td colspan="3"><strong>{{ day }}</strong></td>
+                                                        </tr>
+                                                        {% for class in classes %}
+                                                        <tr>
+                                                            <td>{{ class.start_time }} - {{ class.end_time }}</td>
+                                                            <td>{{ class.name }}</td>
+                                                            <td>{{ class.location }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 获取专属推荐按钮 -->
+                        <form action="{{ url_for('generate_recommendation') }}" method="post" class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg btn-next">
+                                <i class="bi bi-magic"></i> 获取专属推荐
+                            </button>
+                            <p class="text-muted mt-2">点击按钮后，系统将根据您的个人信息和课表安排生成专属饮食计划</p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">© {{ current_year }} 北京大学智能饮食规划系统 | 保持健康，享受美食</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html> 

@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>饮食规划 - 北京大学智慧食堂</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 页面特定样式 */
+        .pku-navbar {
+            background: linear-gradient(135deg, #5D69BE, #C86DD7);
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section-header h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .section-header p {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .user-summary {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .user-summary h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .user-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .user-info p {
+            margin: 0;
+            line-height: 1.6;
+        }
+        
+        .nutrition-needs {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .nutrition-needs h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .nutrition-item {
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .nutrition-item h4 {
+            color: #5D69BE;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .nutrition-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin: 5px 0;
+        }
+        
+        .nutrition-info {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0 0;
+        }
+        
+        .bmi-info {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .bmi-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .nutrition-suggestions {
+            margin-top: 15px;
+        }
+        
+        .nutrition-suggestions ul {
+            padding-left: 20px;
+            margin: 10px 0 0;
+        }
+        
+        .nutrition-suggestions li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .weekly-plan {
+            margin-bottom: 40px;
+        }
+        
+        .weekly-plan h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .week-nav {
+            display: flex;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .day-tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .day-tab:hover {
+            color: #5D69BE;
+        }
+        
+        .day-tab.active {
+            color: #5D69BE;
+            border-bottom-color: #5D69BE;
+        }
+        
+        .day-plan {
+            display: none;
+        }
+        
+        .day-plan.active {
+            display: block;
+        }
+        
+        .day-plan h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .meal-card {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .meal-header {
+            background: linear-gradient(135deg, #5D69BE, #7986CB);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .meal-header h4 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .meal-time, .meal-location {
+            font-size: 14px;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .meal-foods {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .meal-foods h5 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .meal-foods ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+        
+        .meal-foods li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        .meal-nutrients {
+            padding: 15px 20px;
+            background: #f9f9f9;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .meal-nutrients h5 {
+            grid-column: 1 / -1;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .meal-nutrients p {
+            margin: 0;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .meal-actions {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+        
+        .record-meal-btn {
+            background: #5D69BE;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .record-meal-btn:hover {
+            background: #3F51B5;
+        }
+        
+        .snack-card .meal-header {
+            background: linear-gradient(135deg, #9575CD, #B39DDB);
+        }
+        
+        .weekly-summary {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .weekly-summary h3 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .nutrition-summary {
+            margin-bottom: 20px;
+        }
+        
+        .nutrition-summary p {
+            margin: 8px 0;
+            color: #555;
+        }
+        
+        .overall-suggestions {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .overall-suggestions p {
+            margin: 0;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .feedback-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .feedback-section h2 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .feedback-form {
+            margin-top: 20px;
+        }
+        
+        .feedback-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #5D69BE;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #3F51B5;
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9e9e9;
+        }
+        
+        .trend-analysis {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .trend-analysis h2 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        #trends-chart-container {
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        #trends-analysis {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .ai-assistant {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .ai-assistant h2 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .chat-container {
+            margin-top: 20px;
+        }
+        
+        .chat-messages {
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input textarea {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .close-modal:hover {
+            color: #555;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+        }
+        
+        /* 新增样式 */
+        .profile-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .profile-actions .btn,
+        .profile-actions .btn-secondary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+        
+        /* 每日总计卡片样式 */
+        .daily-total-card .meal-header {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+        }
+        
+        .daily-total-card .meal-nutrients {
+            background: #f0f8e8;
+            font-weight: 600;
+        }
+        
+        .daily-total-card .meal-nutrients p {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .user-info,
+            .nutrition-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .meal-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .meal-time, .meal-location {
+                margin-top: 5px;
+            }
+            
+            .meal-nutrients {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .week-nav {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pku-wrapper">
+        <!-- 顶部导航栏 -->
+        <nav class="pku-navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}">首页</a>
+                    <a href="{{ url_for('profile') }}">个人资料</a>
+                    <a href="{{ url_for('schedule') }}">课表导入</a>
+                    <a href="{{ url_for('ai_chat') }}">AI营养师</a>
+                    <a href="{{ url_for('health_tracking') }}">健康追踪</a>
+                    <a href="{{ url_for('health_tips') }}">健康贴士</a>
+                </div>
+                <div class="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="page-main">
+            <div class="section-container">
+                <div class="section-header">
+                    <h1>您的个性化饮食规划</h1>
+                    <p>基于您的个人信息、健康目标和课表安排</p>
+                </div>
+                
+                <div class="user-summary">
+                    <h2>用户信息摘要</h2>
+                    <div class="user-info">
+                        <p><strong>姓名:</strong> {{ user_info.name }}</p>
+                        <p><strong>年龄:</strong> {{ user_info.age }} 岁</p>
+                        <p><strong>性别:</strong> {{ user_info.gender }}</p>
+                        <p><strong>身高:</strong> {{ user_info.height }} cm</p>
+                        <p><strong>体重:</strong> {{ user_info.weight }} kg</p>
+                        <p><strong>健康目标:</strong> {{ user_info.health_goal }}</p>
+                        
+                        <div class="profile-actions">
+                            <a href="{{ url_for('profile') }}" class="btn-secondary">
+                                <i class="fas fa-edit"></i> 编辑个人信息
+                            </a>
+                            <form action="{{ url_for('regenerate_meal_plan') }}" method="post" style="display: inline;">
+                                <button type="submit" class="btn">
+                                    <i class="fas fa-sync-alt"></i> 重新生成饮食计划
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="nutrition-needs">
+                        <h3>每日营养需求</h3>
+                        <div class="nutrition-grid">
+                            <div class="nutrition-item">
+                                <h4>热量</h4>
+                                <p class="nutrition-value">{{ nutrition_needs.daily_calories }} 卡路里</p>
+                            </div>
+                            <div class="nutrition-item">
+                                <h4>蛋白质</h4>
+                                <p class="nutrition-value">{{ nutrition_needs.protein }} 克</p>
+                                <p class="nutrition-info">帮助肌肉生长和修复</p>
+                            </div>
+                            <div class="nutrition-item">
+                                <h4>碳水化合物</h4>
+                                <p class="nutrition-value">{{ nutrition_needs.carbs }} 克</p>
+                                <p class="nutrition-info">提供能量和维持血糖</p>
+                            </div>
+                            <div class="nutrition-item">
+                                <h4>脂肪</h4>
+                                <p class="nutrition-value">{{ nutrition_needs.fat }} 克</p>
+                                <p class="nutrition-info">提供必需脂肪酸和帮助吸收维生素</p>
+                            </div>
+                            <div class="nutrition-item">
+                                <h4>膳食纤维</h4>
+                                <p class="nutrition-value">{{ nutrition_needs.fiber }} 克</p>
+                                <p class="nutrition-info">促进消化和维持肠道健康</p>
+                            </div>
+                            <div class="nutrition-item">
+                                <h4>水分</h4>
+                                <p class="nutrition-value">{{ nutrition_needs.water }} 毫升</p>
+                                <p class="nutrition-info">维持身体机能和新陈代谢</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bmi-info">
+                            <h4>BMI指数</h4>
+                            <p class="bmi-value">{{ nutrition_needs.bmi }}</p>
+                            {% if nutrition_needs.suggestions %}
+                            <div class="nutrition-suggestions">
+                                <h4>营养建议</h4>
+                                <ul>
+                                    {% for suggestion in nutrition_needs.suggestions %}
+                                    <li>{{ suggestion }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weekly-plan">
+                    <h2>每周饮食计划</h2>
+                    
+                    {% if meal_plan.error %}
+                    <div class="error-message">
+                        <p>{{ meal_plan.error }}</p>
+                        <a href="{{ url_for('schedule') }}" class="btn">重新生成</a>
+                    </div>
+                    {% else %}
+                    
+                    <div class="week-nav">
+                        <button class="day-tab active" data-day="星期一">星期一</button>
+                        <button class="day-tab" data-day="星期二">星期二</button>
+                        <button class="day-tab" data-day="星期三">星期三</button>
+                        <button class="day-tab" data-day="星期四">星期四</button>
+                        <button class="day-tab" data-day="星期五">星期五</button>
+                        <button class="day-tab" data-day="星期六">星期六</button>
+                        <button class="day-tab" data-day="星期日">星期日</button>
+                    </div>
+                    
+                    {% if meal_plan.get('weekly_plan') %}
+                        {% for day, meals in meal_plan.get('weekly_plan', {}).items() %}
+                        <div class="day-plan {% if day == '星期一' %}active{% endif %}" id="plan-{{ day }}">
+                            <h3>{{ day }}</h3>
+                            
+                            {% if meals is mapping %}
+                                <!-- 按顺序显示三餐 -->
+                                {% set meal_order = ['早餐', '午餐', '晚餐', '零食'] %}
+                                {% for meal_type in meal_order %}
+                                    {% if meal_type in meals and meals[meal_type] is mapping %}
+                                        {% if meal_type != '零食' %}
+                                        <div class="meal-card">
+                                            <div class="meal-header">
+                                                <h4>{{ meal_type }}</h4>
+                                                <span class="meal-time">{{ meals[meal_type].get('时间', '--') }}</span>
+                                                <span class="meal-location">{{ meals[meal_type].get('食堂', '--') }}</span>
+                                            </div>
+                                            
+                                            <div class="meal-foods">
+                                                <h5>推荐食物:</h5>
+                                                <ul>
+                                                    {% for food in meals[meal_type].get('食物', []) %}
+                                                    <li>{{ food }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            
+                                            <div class="meal-nutrients">
+                                                <h5>营养成分:</h5>
+                                                <p>热量: {{ meals[meal_type].get('营养素', {}).get('热量', '--') }} 卡路里</p>
+                                                <p>蛋白质: {{ meals[meal_type].get('营养素', {}).get('蛋白质', '--') }} 克</p>
+                                                <p>碳水: {{ meals[meal_type].get('营养素', {}).get('碳水', '--') }} 克</p>
+                                                <p>脂肪: {{ meals[meal_type].get('营养素', {}).get('脂肪', '--') }} 克</p>
+                                            </div>
+                                            
+                                            <div class="meal-actions">
+                                                <button type="button" class="record-meal-btn" 
+                                                        data-day="{{ day }}" 
+                                                        data-meal="{{ meal_type }}" 
+                                                        data-foods="{{ meals[meal_type].get('食物', [])|tojson|safe }}"
+                                                        onclick="openMealRecordModal(this)">
+                                                    <i class="fas fa-utensils"></i> 记录实际饮食
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {% elif meal_type == '零食' %}
+                                        <div class="meal-card snack-card">
+                                            <div class="meal-header">
+                                                <h4>零食建议</h4>
+                                            </div>
+                                            
+                                            <div class="meal-foods">
+                                                <ul>
+                                                    {% for snack in meals[meal_type].get('建议', []) %}
+                                                    <li>{{ snack }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            
+                                            <div class="meal-nutrients">
+                                                <h5>营养成分:</h5>
+                                                <p>热量: {{ meals[meal_type].get('营养素', {}).get('热量', '--') }} 卡路里</p>
+                                                <p>蛋白质: {{ meals[meal_type].get('营养素', {}).get('蛋白质', '--') }} 克</p>
+                                                <p>碳水: {{ meals[meal_type].get('营养素', {}).get('碳水', '--') }} 克</p>
+                                                <p>脂肪: {{ meals[meal_type].get('营养素', {}).get('脂肪', '--') }} 克</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="weekly-summary">
+                        <h3>每周营养总结</h3>
+                        <div class="nutrition-summary">
+                            {% if meal_plan.get('每周营养总结') is mapping %}
+                                {% for key, value in meal_plan.get('每周营养总结', {}).items() %}
+                                <p><strong>{{ key }}:</strong> {{ value }}</p>
+                                {% endfor %}
+                            {% else %}
+                                <p>暂无每周营养总结</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="overall-suggestions">
+                            <h3>总体建议</h3>
+                            <p>{{ meal_plan.get('总体建议', '暂无总体建议') }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="feedback-section">
+                    <h2>反馈与调整</h2>
+                    <p>不满意当前的饮食计划？请提供您的反馈，我们将为您调整：</p>
+                    
+                    <div class="feedback-form">
+                        <textarea id="feedback" rows="4" placeholder="例如：我不喜欢早餐吃燕麦，希望能换成馒头或包子；我午餐时间比较紧张，需要快速就餐选项等"></textarea>
+                        <button id="adjust-plan-btn" class="btn">调整计划</button>
+                    </div>
+                </div>
+                
+                <div class="trend-analysis">
+                    <h2>饮食趋势分析</h2>
+                    <p>记录您的实际饮食后，系统将分析您的饮食趋势和营养摄入情况。</p>
+                    <button id="analyze-trends-btn" class="btn">分析趋势</button>
+                    
+                    <div id="trend-results" style="display: none;">
+                        <div id="trends-chart-container">
+                            <canvas id="trends-chart"></canvas>
+                        </div>
+                        <div id="trends-analysis"></div>
+                    </div>
+                </div>
+                
+                <!-- AI健康助手 -->
+                <div class="ai-assistant">
+                    <h2>AI健康助手</h2>
+                    <p>有任何饮食健康问题都可以问我哦！我会基于专业的营养学知识为您解答。</p>
+                    
+                    <div class="chat-container">
+                        <div id="chat-messages" class="chat-messages"></div>
+                        
+                        <div class="chat-input">
+                            <textarea id="user-message" placeholder="请输入您的问题..." rows="2"></textarea>
+                            <button id="send-message" class="btn">发送</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 记录饮食的弹窗 -->
+                <div id="record-meal-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-modal">&times;</span>
+                        <h3>记录实际饮食</h3>
+                        
+                        <div id="recommended-foods">
+                            <h4>推荐食物：</h4>
+                            <ul id="recommended-foods-list"></ul>
+                        </div>
+                        
+                        <form id="actual-meal-form">
+                            <div class="form-group">
+                                <label for="actual-foods">实际食用食物（每行一个）:</label>
+                                <textarea id="actual-foods" rows="5" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="actual-calories">估计热量 (卡路里):</label>
+                                <input type="number" id="actual-calories" min="0" max="5000">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="satisfaction">满意度:</label>
+                                <select id="satisfaction">
+                                    <option value="很满意">很满意</option>
+                                    <option value="满意" selected>满意</option>
+                                    <option value="一般">一般</option>
+                                    <option value="不满意">不满意</option>
+                                    <option value="很不满意">很不满意</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="notes">备注:</label>
+                                <textarea id="notes" rows="2"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn">保存记录</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- 页脚 -->
+        <footer class="pku-footer">
+            <div class="footer-container">
+                <div class="footer-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>快速链接</h4>
+                        <ul>
+                            <li><a href="{{ url_for('index') }}">首页</a></li>
+                            <li><a href="{{ url_for('profile') }}">个人资料</a></li>
+                            <li><a href="{{ url_for('schedule') }}">课表导入</a></li>
+                            <li><a href="{{ url_for('health_tracking') }}">健康追踪</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>相关资源</h4>
+                        <ul>
+                            <li><a href="https://www.pku.edu.cn/" target="_blank">北京大学官网</a></li>
+                            <li><a href="https://canteen.pku.edu.cn/" target="_blank">北大餐饮中心</a></li>
+                            <li><a href="https://dean.pku.edu.cn/" target="_blank">教务部</a></li>
+                            <li><a href="https://portal.pku.edu.cn/" target="_blank">北大门户</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>联系我们</h4>
+                        <ul>
+                            <li><i class="fas fa-envelope"></i> smartdining@pku.edu.cn</li>
+                            <li><i class="fas fa-phone"></i> 010-6274XXXX</li>
+                            <li><i class="fas fa-map-marker-alt"></i> 北京市海淀区颐和园路5号</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ current_year }} 北京大学智慧食堂系统 | 关注健康，享受美食</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 导航栏移动端切换
+            const navToggle = document.querySelector('.nav-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (navToggle) {
+                navToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+            }
+            
+            // 周计划标签切换
+            const dayTabs = document.querySelectorAll('.day-tab');
+            const dayPlans = document.querySelectorAll('.day-plan');
+            
+            dayTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const day = this.getAttribute('data-day');
+                    
+                    // 移除所有活动状态
+                    dayTabs.forEach(t => t.classList.remove('active'));
+                    dayPlans.forEach(p => p.classList.remove('active'));
+                    
+                    // 设置当前活动状态
+                    this.classList.add('active');
+                    document.getElementById('plan-' + day).classList.add('active');
+                });
+            });
+            
+            // 记录实际饮食功能
+            const recordButtons = document.querySelectorAll('.record-meal-btn');
+            const recordModal = document.getElementById('record-meal-modal');
+            const closeModal = document.querySelector('.close-modal');
+            const actualMealForm = document.getElementById('actual-meal-form');
+            const recommendedFoodsList = document.getElementById('recommended-foods-list');
+            
+            // 调试输出
+            console.log("找到记录按钮数量:", recordButtons.length);
+            console.log("模态框元素:", recordModal);
+            console.log("关闭按钮:", closeModal);
+            console.log("表单元素:", actualMealForm);
+            console.log("推荐食物列表:", recommendedFoodsList);
+            
+            let currentDay = '';
+            let currentMeal = '';
+            let recommendedFoods = [];
+            
+            // 打开记录饮食弹窗
+            recordButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    currentDay = this.getAttribute('data-day');
+                    currentMeal = this.getAttribute('data-meal');
+                    
+                    try {
+                        // 尝试解析食物数据
+                        const foodsData = this.getAttribute('data-foods');
+                        console.log("Foods data:", foodsData); // 调试输出
+                        
+                        // 如果数据已经是数组，直接使用
+                        if (Array.isArray(foodsData)) {
+                            recommendedFoods = foodsData;
+                        } else {
+                            // 否则尝试解析JSON字符串
+                            recommendedFoods = JSON.parse(foodsData);
+                        }
+                        
+                        // 确保recommendedFoods是数组
+                        if (!Array.isArray(recommendedFoods)) {
+                            recommendedFoods = [];
+                            console.error("食物数据格式错误");
+                        }
+                    } catch (e) {
+                        console.error("解析食物数据出错:", e);
+                        recommendedFoods = [];
+                    }
+                    
+                    // 显示推荐食物
+                    recommendedFoodsList.innerHTML = '';
+                    if (recommendedFoods.length > 0) {
+                        recommendedFoods.forEach(food => {
+                            const li = document.createElement('li');
+                            li.textContent = food;
+                            recommendedFoodsList.appendChild(li);
+                        });
+                    } else {
+                        const li = document.createElement('li');
+                        li.textContent = "无推荐食物数据";
+                        recommendedFoodsList.appendChild(li);
+                    }
+                    
+                    // 默认填充推荐食物到实际食物
+                    document.getElementById('actual-foods').value = recommendedFoods.join('\n');
+                    
+                    // 显示模态框
+                    recordModal.style.display = 'block';
+                });
+            });
+            
+            // 关闭弹窗
+            if (closeModal) {
+                closeModal.addEventListener('click', function() {
+                    recordModal.style.display = 'none';
+                });
+            }
+            
+            // 点击弹窗外区域关闭弹窗
+            window.addEventListener('click', function(event) {
+                if (event.target === recordModal) {
+                    recordModal.style.display = 'none';
+                }
+            });
+            
+            // 提交实际饮食记录
+            if (actualMealForm) {
+                actualMealForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const actualFoods = document.getElementById('actual-foods').value.split('\n').filter(food => food.trim() !== '');
+                    const actualCalories = document.getElementById('actual-calories').value;
+                    const satisfaction = document.getElementById('satisfaction').value;
+                    const notes = document.getElementById('notes').value;
+                    
+                    const mealData = {
+                        day: currentDay,
+                        meal_type: currentMeal,
+                        recommended_foods: recommendedFoods,
+                        actual_foods: actualFoods,
+                        actual_calories: parseInt(actualCalories) || 0,
+                        satisfaction: satisfaction,
+                        notes: notes
+                    };
+                    
+                    // 发送记录到服务器
+                    fetch('/record_meal', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(mealData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('饮食记录已保存！');
+                            recordModal.style.display = 'none';
+                        } else {
+                            alert('保存失败: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('发生错误，请稍后再试');
+                    });
+                });
+            }
+            
+            // 分析趋势功能
+            const analyzeTrendsBtn = document.getElementById('analyze-trends-btn');
+            const trendResults = document.getElementById('trend-results');
+            const trendsAnalysis = document.getElementById('trends-analysis');
+            
+            if (analyzeTrendsBtn) {
+                analyzeTrendsBtn.addEventListener('click', function() {
+                    // 显示加载状态
+                    trendsAnalysis.innerHTML = '<p>正在分析您的饮食趋势...</p>';
+                    trendResults.style.display = 'block';
+                    
+                    // 请求分析数据
+                    fetch('/analyze_trends')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                // 显示分析结果
+                                trendsAnalysis.innerHTML = `<div class="analysis-content">${data.analysis}</div>`;
+                                
+                                // 创建图表
+                                const ctx = document.getElementById('trends-chart').getContext('2d');
+                                new Chart(ctx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: Object.keys(data.daily_calories),
+                                        datasets: [{
+                                            label: '每日热量摄入',
+                                            data: Object.values(data.daily_calories),
+                                            backgroundColor: 'rgba(158, 27, 50, 0.2)',
+                                            borderColor: 'rgba(158, 27, 50, 1)',
+                                            borderWidth: 2,
+                                            tension: 0.3
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        scales: {
+                                            y: {
+                                                beginAtZero: false,
+                                                title: {
+                                                    display: true,
+                                                    text: '热量 (卡路里)'
+                                                }
+                                            },
+                                            x: {
+                                                title: {
+                                                    display: true,
+                                                    text: '日期'
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            } else {
+                                trendsAnalysis.innerHTML = `<p class="error-message">${data.message}</p>`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            trendsAnalysis.innerHTML = '<p class="error-message">分析出错，请稍后再试</p>';
+                        });
+                });
+            }
+            
+            // 调整计划功能
+            const adjustPlanBtn = document.getElementById('adjust-plan-btn');
+            
+            if (adjustPlanBtn) {
+                adjustPlanBtn.addEventListener('click', function() {
+                    const feedback = document.getElementById('feedback').value.trim();
+                    
+                    if (!feedback) {
+                        alert('请先填写您的反馈意见');
+                        return;
+                    }
+                    
+                    // 显示加载状态
+                    adjustPlanBtn.disabled = true;
+                    adjustPlanBtn.textContent = '正在调整...';
+                    
+                    // 发送调整请求
+                    fetch('/adjust_plan', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ feedback: feedback })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('饮食计划已调整，页面将刷新');
+                            location.reload();
+                        } else {
+                            alert('调整失败: ' + data.message);
+                            adjustPlanBtn.disabled = false;
+                            adjustPlanBtn.textContent = '调整计划';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('发生错误，请稍后再试');
+                        adjustPlanBtn.disabled = false;
+                        adjustPlanBtn.textContent = '调整计划';
+                    });
+                });
+            }
+            
+            // AI健康助手功能
+            const sendMessageBtn = document.getElementById('send-message');
+            const userMessageInput = document.getElementById('user-message');
+            const chatMessages = document.getElementById('chat-messages');
+            
+            if (sendMessageBtn && userMessageInput) {
+                sendMessageBtn.addEventListener('click', function() {
+                    const message = userMessageInput.value.trim();
+                    
+                    if (!message) return;
+                    
+                    // 添加用户消息
+                    const userMsgDiv = document.createElement('div');
+                    userMsgDiv.className = 'user-message';
+                    userMsgDiv.innerHTML = `<p>${message}</p>`;
+                    chatMessages.appendChild(userMsgDiv);
+                    
+                    // 清空输入框
+                    userMessageInput.value = '';
+                    
+                    // 添加加载消息
+                    const loadingDiv = document.createElement('div');
+                    loadingDiv.className = 'assistant-message loading';
+                    loadingDiv.innerHTML = '<p>正在思考...</p>';
+                    chatMessages.appendChild(loadingDiv);
+                    
+                    // 滚动到底部
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // 发送到AI助手
+                    fetch('/ai_assistant', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: message })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 移除加载消息
+                        loadingDiv.remove();
+                        
+                        // 添加助手回复
+                        const assistantMsgDiv = document.createElement('div');
+                        assistantMsgDiv.className = 'assistant-message';
+                        
+                        if (data.status === 'success') {
+                            assistantMsgDiv.innerHTML = `<p>${data.answer}</p>`;
+                        } else {
+                            assistantMsgDiv.innerHTML = '<p>抱歉，我无法回答您的问题。请稍后再试。</p>';
+                        }
+                        
+                        chatMessages.appendChild(assistantMsgDiv);
+                        
+                        // 滚动到底部
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    })
+                    .catch(error => {
+                        // 移除加载消息
+                        loadingDiv.remove();
+                        
+                        // 添加错误消息
+                        const errorMsgDiv = document.createElement('div');
+                        errorMsgDiv.className = 'assistant-message error';
+                        errorMsgDiv.innerHTML = '<p>抱歉，发生了错误。请稍后再试。</p>';
+                        chatMessages.appendChild(errorMsgDiv);
+                        
+                        // 滚动到底部
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    });
+                });
+                
+                // 回车发送消息
+                userMessageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessageBtn.click();
+                    }
+                });
+            }
+        });
+
+        // 全局函数，直接在HTML中调用
+        function openMealRecordModal(button) {
+            console.log("打开模态框按钮被点击");
+            
+            // 获取数据
+            const day = button.getAttribute('data-day');
+            const meal = button.getAttribute('data-meal');
+            const foodsData = button.getAttribute('data-foods');
+            
+            console.log("日期:", day);
+            console.log("餐次:", meal);
+            console.log("食物数据:", foodsData);
+            
+            // 解析食物数据
+            let foods = [];
+            try {
+                foods = JSON.parse(foodsData);
+                console.log("解析后的食物:", foods);
+            } catch (e) {
+                console.error("解析食物数据出错:", e);
+            }
+            
+            // 更新模态框内容
+            const recommendedList = document.getElementById('recommended-foods-list');
+            recommendedList.innerHTML = '';
+            
+            if (foods && foods.length > 0) {
+                foods.forEach(food => {
+                    const li = document.createElement('li');
+                    li.textContent = food;
+                    recommendedList.appendChild(li);
+                });
+                
+                // 填充文本区域
+                document.getElementById('actual-foods').value = foods.join('\n');
+            } else {
+                const li = document.createElement('li');
+                li.textContent = "无推荐食物数据";
+                recommendedList.appendChild(li);
+                document.getElementById('actual-foods').value = '';
+            }
+            
+            // 存储当前选择的日期和餐次
+            document.getElementById('actual-meal-form').setAttribute('data-day', day);
+            document.getElementById('actual-meal-form').setAttribute('data-meal', meal);
+            document.getElementById('actual-meal-form').setAttribute('data-foods', foodsData);
+            
+            // 显示模态框
+            document.getElementById('record-meal-modal').style.display = 'block';
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... 其他现有代码 ...
+            
+            // 关闭模态框
+            const closeModal = document.querySelector('.close-modal');
+            if (closeModal) {
+                closeModal.addEventListener('click', function() {
+                    document.getElementById('record-meal-modal').style.display = 'none';
+                });
+            }
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('record-meal-modal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // 提交表单
+            const mealForm = document.getElementById('actual-meal-form');
+            if (mealForm) {
+                mealForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const day = this.getAttribute('data-day');
+                    const mealType = this.getAttribute('data-meal');
+                    const recommendedFoods = JSON.parse(this.getAttribute('data-foods') || '[]');
+                    
+                    const actualFoods = document.getElementById('actual-foods').value
+                        .split('\n')
+                        .filter(food => food.trim() !== '');
+                    const actualCalories = document.getElementById('actual-calories').value;
+                    const satisfaction = document.getElementById('satisfaction').value;
+                    const notes = document.getElementById('notes').value;
+                    
+                    const mealData = {
+                        day: day,
+                        meal_type: mealType,
+                        recommended_foods: recommendedFoods,
+                        actual_foods: actualFoods,
+                        actual_calories: parseInt(actualCalories) || 0,
+                        satisfaction: satisfaction,
+                        notes: notes
+                    };
+                    
+                    console.log("提交的数据:", mealData);
+                    
+                    // 发送记录到服务器
+                    fetch('/record_meal', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(mealData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('饮食记录已保存！');
+                            document.getElementById('record-meal-modal').style.display = 'none';
+                        } else {
+                            alert('保存失败: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('发生错误，请稍后再试');
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

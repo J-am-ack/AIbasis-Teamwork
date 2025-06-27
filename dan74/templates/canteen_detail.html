@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ canteen.name }} - 北京大学智慧食堂</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="pku-wrapper">
+        <!-- 顶部导航栏 -->
+        <nav class="pku-navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}">首页</a>
+                    <a href="{{ url_for('profile') }}">个人资料</a>
+                    <a href="{{ url_for('schedule') }}">课表导入</a>
+                    <a href="{{ url_for('ai_chat') }}">AI营养师</a>
+                </div>
+                <div class="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="page-main">
+            <div class="section-container">
+                <div class="canteen-detail-header">
+                    <h1>{{ canteen.name }}</h1>
+                    <p class="canteen-location"><i class="fas fa-map-marker-alt"></i> {{ canteen.location }}</p>
+                    <div class="canteen-features">
+                        {% for feature in canteen.features %}
+                        <span class="feature-tag">{{ feature }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="canteen-sections">
+                    <!-- 食堂介绍 -->
+                    <div class="canteen-section">
+                        <h2 class="section-title">食堂介绍</h2>
+                        <div class="canteen-description">
+                            <p>{{ canteen.description|default('这是北京大学的特色食堂，提供多种美味可口的餐点，欢迎师生前来就餐。') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- 营业时间 -->
+                    <div class="canteen-section">
+                        <h2 class="section-title">营业时间</h2>
+                        <div class="business-hours">
+                            <div class="hour-item">
+                                <div class="meal-type">早餐</div>
+                                <div class="time-range">{{ canteen.hours.breakfast|default('6:30 - 9:00') }}</div>
+                            </div>
+                            <div class="hour-item">
+                                <div class="meal-type">午餐</div>
+                                <div class="time-range">{{ canteen.hours.lunch|default('10:30 - 13:30') }}</div>
+                            </div>
+                            <div class="hour-item">
+                                <div class="meal-type">晚餐</div>
+                                <div class="time-range">{{ canteen.hours.dinner|default('17:00 - 19:30') }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 特色菜品 -->
+                    <div class="canteen-section">
+                        <h2 class="section-title">特色菜品</h2>
+                        <div class="dishes-grid">
+                            {% if canteen.dishes %}
+                                {% for dish in canteen.dishes %}
+                                <div class="dish-card">
+                                    <div class="dish-info">
+                                        <h3>{{ dish.name }}</h3>
+                                        <p class="dish-price">¥{{ dish.price }}</p>
+                                        <p class="dish-description">{{ dish.description|default('') }}</p>
+                                        <div class="dish-tags">
+                                            {% for tag in dish.tags|default([]) %}
+                                            <span class="dish-tag">{{ tag }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="no-data">暂无特色菜品数据</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 用户评价 -->
+                    <div class="canteen-section">
+                        <h2 class="section-title">用户评价</h2>
+                        <div class="reviews-container">
+                            {% if canteen.reviews %}
+                                {% for review in canteen.reviews %}
+                                <div class="review-card">
+                                    <div class="review-header">
+                                        <div class="reviewer-name">{{ review.user }}</div>
+                                        <div class="review-rating">
+                                            {% for i in range(5) %}
+                                                {% if i < review.rating %}
+                                                <i class="fas fa-star"></i>
+                                                {% else %}
+                                                <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="review-content">
+                                        <p>{{ review.comment }}</p>
+                                    </div>
+                                    <div class="review-date">{{ review.date }}</div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="no-data">暂无用户评价</p>
+                                <div class="add-review">
+                                    <button class="pku-btn secondary-btn">添加评价</button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="pku-footer">
+            <div class="footer-container">
+                <div class="footer-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>快速链接</h4>
+                        <ul>
+                            <li><a href="{{ url_for('profile') }}">个人资料</a></li>
+                            <li><a href="{{ url_for('schedule') }}">课表导入</a></li>
+                            <li><a href="{{ url_for('ai_chat') }}">AI营养师</a></li>
+                            <li><a href="{{ url_for('health_tracking') }}">健康追踪</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>相关资源</h4>
+                        <ul>
+                            <li><a href="https://www.pku.edu.cn/" target="_blank">北京大学官网</a></li>
+                            <li><a href="https://canteen.pku.edu.cn/" target="_blank">北大餐饮中心</a></li>
+                            <li><a href="https://dean.pku.edu.cn/" target="_blank">教务部</a></li>
+                            <li><a href="https://portal.pku.edu.cn/" target="_blank">北大门户</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>联系我们</h4>
+                        <ul>
+                            <li><i class="fas fa-envelope"></i> smartdining@pku.edu.cn</li>
+                            <li><i class="fas fa-phone"></i> 010-6274XXXX</li>
+                            <li><i class="fas fa-map-marker-alt"></i> 北京市海淀区颐和园路5号</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ current_year }} 北京大学智慧食堂系统 | 关注健康，享受美食</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html> 

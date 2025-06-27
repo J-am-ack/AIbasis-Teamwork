@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京大学智慧食堂 - 您的个性化营养管家</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="pku-wrapper">
+        <!-- 顶部导航栏 -->
+        <nav class="pku-navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#features">主要功能</a>
+                    <a href="#canteens">校园食堂</a>
+                    <a href="#health-tips">健康贴士</a>
+                    <a href="{{ url_for('profile') }}" class="nav-button">开始使用</a>
+                </div>
+                <div class="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主横幅 -->
+        <header class="pku-hero">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>北京大学智慧食堂</h1>
+                <p class="hero-subtitle">基于人工智能的个性化营养规划与健康管理平台</p>
+                <div class="hero-buttons">
+                    <a href="{{ url_for('profile') }}" class="pku-btn primary-btn">立即开始</a>
+                    <a href="#features" class="pku-btn secondary-btn">了解更多</a>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- 主要功能区 -->
+            <section id="features" class="pku-section">
+                <div class="section-container">
+                    <h2 class="section-title">主要功能</h2>
+                    <div class="section-subtitle">为北大学子提供全方位的饮食健康服务</div>
+                    
+                    <div class="features-grid">
+                        <a href="{{ url_for('profile') }}" class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <h3>个性化营养规划</h3>
+                            <p>基于您的身体状况、运动习惯和健康目标，为您量身定制营养方案</p>
+                            <span class="feature-link">开始规划 <i class="fas fa-arrow-right"></i></span>
+                        </a>
+                        
+                        <a href="{{ url_for('schedule') }}" class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <h3>智能食堂导航</h3>
+                            <p>结合您的课表和位置信息，推荐最优食堂和就餐时间</p>
+                            <span class="feature-link">导入课表 <i class="fas fa-arrow-right"></i></span>
+                        </a>
+                        
+                        <a href="{{ url_for('ai_chat') }}" class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h3>AI营养师</h3>
+                            <p>24小时在线解答您的饮食健康问题，提供专业建议</p>
+                            <span class="feature-link">立即咨询 <i class="fas fa-arrow-right"></i></span>
+                        </a>
+                        
+                        <a href="{{ url_for('health_tracking') }}" class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>健康追踪</h3>
+                            <p>记录并分析您的饮食习惯，帮助您实现健康目标</p>
+                            <span class="feature-link">查看报告 <i class="fas fa-arrow-right"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 使用流程 -->
+            <section class="pku-section pku-section-alt">
+                <div class="section-container">
+                    <h2 class="section-title">使用流程</h2>
+                    <div class="section-subtitle">简单四步，开启健康生活</div>
+                    
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>完善个人信息</h3>
+                                <p>填写您的身高、体重、年龄等基本信息和健康目标</p>
+                            </div>
+                        </div>
+                        
+                        <div class="process-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>导入课表安排</h3>
+                                <p>上传您的课表，系统将根据您的时间和位置做出智能推荐</p>
+                            </div>
+                        </div>
+                        
+                        <div class="process-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>获取专属推荐</h3>
+                                <p>点击"获取专属推荐"按钮，系统将生成个性化的饮食计划和食堂推荐</p>
+                            </div>
+                        </div>
+                        
+                        <div class="process-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>记录与调整</h3>
+                                <p>记录实际饮食情况，系统会不断优化您的推荐</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-cta">
+                        <a href="{{ url_for('profile') }}" class="pku-btn primary-btn">立即开始</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 校园食堂 -->
+            <section id="canteens" class="pku-section">
+                <div class="section-container">
+                    <h2 class="section-title">校园食堂</h2>
+                    <div class="section-subtitle">探索北大特色食堂</div>
+                    
+                    <div class="canteens-grid">
+                        {% for canteen in canteens %}
+                        <div class="canteen-card">
+                            <div class="canteen-header" style="background-color: #f5f5f5;">
+                                <div class="canteen-overlay"></div>
+                                <h3>{{ canteen.name }}</h3>
+                            </div>
+                            <div class="canteen-body">
+                                <div class="canteen-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ canteen.location }}</span>
+                                </div>
+                                <div class="canteen-features">
+                                    {% for feature in canteen.features %}
+                                    <span class="feature-tag">{{ feature }}</span>
+                                    {% endfor %}
+                                </div>
+                                <a href="{{ url_for('canteen_detail', canteen_id=canteen.id) }}" class="canteen-link">查看详情</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- 健康贴士 -->
+            <section id="health-tips" class="pku-section pku-section-alt">
+                <div class="section-container">
+                    <h2 class="section-title">健康贴士</h2>
+                    <div class="section-subtitle">每日更新的营养与健康知识</div>
+                    
+                    <div class="tips-container">
+                        <div class="tip-card">
+                            <div class="tip-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="tip-content" id="daily-tip">
+                                <h3>{{ health_tip.title }}</h3>
+                                <p>{{ health_tip.content }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="tip-actions">
+                            <button id="refresh-tip" class="pku-btn secondary-btn">
+                                <i class="fas fa-sync-alt"></i> 换一条
+                            </button>
+                            <a href="{{ url_for('health_tips') }}" class="pku-btn outline-btn">
+                                更多贴士
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="pku-footer">
+            <div class="footer-container">
+                <div class="footer-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>快速链接</h4>
+                        <ul>
+                            <li><a href="{{ url_for('profile') }}">个人资料</a></li>
+                            <li><a href="{{ url_for('schedule') }}">课表导入</a></li>
+                            <li><a href="{{ url_for('ai_chat') }}">AI营养师</a></li>
+                            <li><a href="{{ url_for('health_tracking') }}">健康追踪</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>相关资源</h4>
+                        <ul>
+                            <li><a href="https://www.pku.edu.cn/" target="_blank">北京大学官网</a></li>
+                            <li><a href="https://canteen.pku.edu.cn/" target="_blank">北大餐饮中心</a></li>
+                            <li><a href="https://dean.pku.edu.cn/" target="_blank">教务部</a></li>
+                            <li><a href="https://portal.pku.edu.cn/" target="_blank">北大门户</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>联系我们</h4>
+                        <ul>
+                            <li><i class="fas fa-envelope"></i> smartdining@pku.edu.cn</li>
+                            <li><i class="fas fa-phone"></i> 010-6274XXXX</li>
+                            <li><i class="fas fa-map-marker-alt"></i> 北京市海淀区颐和园路5号</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ current_year }} 北京大学智慧食堂系统 | 关注健康，享受美食</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html> 

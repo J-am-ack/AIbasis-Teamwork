@@ -1,0 +1,14 @@
+
+```python
+# feedback_alert.jinja2 (低分警报模板)
+"""
+[输入数据]
+- 实时API数据: {{ api_data|tojson }}
+- 知识库数据: {{ knowledge|tojson }}
+- 当前时间: {{ current_time }}
+
+[警报] 收到{{ rating }}星低评分
+会话ID: {{ session_id }}
+上下文: {{ context|tojson }}
+请人工跟进处理
+"""

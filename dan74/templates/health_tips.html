@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康贴士 - 北京大学智慧食堂</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 健康贴士页面特定样式 */
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .tip-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .tip-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #5D69BE, #C86DD7);
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+        
+        .tip-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .tip-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        
+        .tip-body {
+            padding: 20px;
+            flex-grow: 1;
+        }
+        
+        .tip-body p {
+            margin: 0;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .tip-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .tip-footer button {
+            background: none;
+            border: none;
+            color: #5D69BE;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        
+        .tip-footer button:hover {
+            color: #3F51B5;
+        }
+        
+        .tip-footer button i {
+            margin-right: 5px;
+        }
+        
+        .tips-filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .filter-btn.active {
+            background: #5D69BE;
+            color: white;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 20px;
+            padding: 5px 15px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .search-box input {
+            border: none;
+            background: transparent;
+            padding: 8px 5px;
+            flex-grow: 1;
+            outline: none;
+        }
+        
+        .search-btn {
+            background: none;
+            border: none;
+            color: #5D69BE;
+            cursor: pointer;
+        }
+        
+        .tips-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            gap: 10px;
+        }
+        
+        .pagination-btn {
+            padding: 8px 15px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-numbers {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .page-number {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            border: none;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .page-number.active {
+            background: #5D69BE;
+            color: white;
+        }
+        
+        .page-ellipsis {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+        }
+        
+        .submit-tip-section {
+            margin-top: 50px;
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 12px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .section-subtitle {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        
+        .submit-tip-form {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            color: #444;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .form-actions {
+            margin-top: 10px;
+        }
+        
+        .pku-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .primary-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .primary-btn:hover {
+            background: #3d8b40;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .tips-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                max-width: 100%;
+            }
+            
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 顶部返回按钮 */
+        .back-to-home {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #5D69BE;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        
+        .back-to-home:hover {
+            background: #3F51B5;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        /* 导航栏样式 */
+        .pku-navbar {
+            background: linear-gradient(135deg, #5D69BE, #C86DD7);
+        }
+        
+        .nav-links a.active {
+            border-bottom: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div class="pku-wrapper">
+        <!-- 顶部导航栏 -->
+        <nav class="pku-navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}">首页</a>
+                    <a href="{{ url_for('profile') }}">个人资料</a>
+                    <a href="{{ url_for('schedule') }}">课表导入</a>
+                    <a href="{{ url_for('health_tips') }}" class="active">健康贴士</a>
+                    <a href="{{ url_for('ai_chat') }}">AI营养师</a>
+                </div>
+                <div class="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="page-main">
+            <div class="section-container">
+                <div class="page-header">
+                    <h1>健康贴士</h1>
+                    <p class="page-subtitle">营养与健康知识库，助您培养健康饮食习惯</p>
+                </div>
+
+                <div class="tips-filters">
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all">全部</button>
+                        <button class="filter-btn" data-filter="food">食材知识</button>
+                        <button class="filter-btn" data-filter="qa">营养问答</button>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="tips-search" placeholder="搜索健康贴士...">
+                        <button class="search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+
+                <div class="tips-grid">
+                    {% for tip in tips %}
+                    <div class="tip-card" data-type="{{ tip.type }}">
+                        <div class="tip-header">
+                            {% if tip.type == 'food' %}
+                            <div class="tip-icon"><i class="fas fa-apple-alt"></i></div>
+                            {% else %}
+                            <div class="tip-icon"><i class="fas fa-question-circle"></i></div>
+                            {% endif %}
+                            <h3>{{ tip.title }}</h3>
+                        </div>
+                        <div class="tip-body">
+                            <p>{{ tip.content }}</p>
+                        </div>
+                        <div class="tip-footer">
+                            <button class="tip-share-btn"><i class="fas fa-share-alt"></i> 分享</button>
+                            <button class="tip-save-btn"><i class="far fa-bookmark"></i> 收藏</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- 根据实际内容动态生成分页 -->
+                {% set total_tips = tips|length %}
+                {% set tips_per_page = 9 %}
+                {% set total_pages = ((total_tips / tips_per_page)|round(0, 'ceil'))|int %}
+                
+                {% if total_pages > 1 %}
+                <div class="tips-pagination">
+                    <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i> 上一页</button>
+                    <div class="pagination-numbers">
+                        {% for i in range(1, total_pages + 1) %}
+                            {% if i <= 3 or i == total_pages or (i >= current_page - 1 and i <= current_page + 1) %}
+                                <button class="page-number {% if i == 1 %}active{% endif %}">{{ i }}</button>
+                            {% elif i == 4 and total_pages > 5 %}
+                                <span class="page-ellipsis">...</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <button class="pagination-btn">下一页 <i class="fas fa-chevron-right"></i></button>
+                </div>
+                {% endif %}
+
+                <div class="submit-tip-section">
+                    <h2 class="section-title">分享您的健康贴士</h2>
+                    <p class="section-subtitle">您有好的健康饮食建议？与北大师生分享吧！</p>
+                    
+                    <div class="submit-tip-form">
+                        <div class="form-group">
+                            <label for="tip-title">标题</label>
+                            <input type="text" id="tip-title" placeholder="请输入贴士标题">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tip-content">内容</label>
+                            <textarea id="tip-content" rows="5" placeholder="请输入贴士内容..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tip-category">分类</label>
+                            <select id="tip-category">
+                                <option value="food">食材知识</option>
+                                <option value="nutrition">营养知识</option>
+                                <option value="recipe">健康食谱</option>
+                                <option value="lifestyle">生活习惯</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button id="submit-tip" class="pku-btn primary-btn">提交贴士</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="pku-footer">
+            <div class="footer-container">
+                <div class="footer-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>快速链接</h4>
+                        <ul>
+                            <li><a href="{{ url_for('index') }}">首页</a></li>
+                            <li><a href="{{ url_for('profile') }}">个人资料</a></li>
+                            <li><a href="{{ url_for('schedule') }}">课表导入</a></li>
+                            <li><a href="{{ url_for('ai_chat') }}">AI营养师</a></li>
+                            <li><a href="{{ url_for('health_tracking') }}">健康追踪</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>相关资源</h4>
+                        <ul>
+                            <li><a href="https://www.pku.edu.cn/" target="_blank">北京大学官网</a></li>
+                            <li><a href="https://canteen.pku.edu.cn/" target="_blank">北大餐饮中心</a></li>
+                            <li><a href="https://dean.pku.edu.cn/" target="_blank">教务部</a></li>
+                            <li><a href="https://portal.pku.edu.cn/" target="_blank">北大门户</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>联系我们</h4>
+                        <ul>
+                            <li><i class="fas fa-envelope"></i> smartdining@pku.edu.cn</li>
+                            <li><i class="fas fa-phone"></i> 010-6274XXXX</li>
+                            <li><i class="fas fa-map-marker-alt"></i> 北京市海淀区颐和园路5号</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ current_year }} 北京大学智慧食堂系统 | 关注健康，享受美食</p>
+                </div>
+            </div>
+        </footer>
+        
+        <!-- 返回首页按钮 -->
+        <a href="{{ url_for('index') }}" class="back-to-home" title="返回首页">
+            <i class="fas fa-home"></i>
+        </a>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 筛选功能
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const tipCards = document.querySelectorAll('.tip-card');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新按钮状态
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filterValue = this.getAttribute('data-filter');
+                    
+                    // 筛选卡片
+                    tipCards.forEach(card => {
+                        if (filterValue === 'all' || card.getAttribute('data-type') === filterValue) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // 搜索功能
+            const searchInput = document.getElementById('tips-search');
+            const searchButton = document.querySelector('.search-btn');
+            
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase();
+                
+                tipCards.forEach(card => {
+                    const title = card.querySelector('h3').textContent.toLowerCase();
+                    const content = card.querySelector('.tip-body p').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || content.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+            
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // 提交贴士
+            const submitTipButton = document.getElementById('submit-tip');
+            submitTipButton.addEventListener('click', function() {
+                const title = document.getElementById('tip-title').value;
+                const content = document.getElementById('tip-content').value;
+                const category = document.getElementById('tip-category').value;
+                
+                if (!title.trim() || !content.trim()) {
+                    alert('请填写标题和内容');
+                    return;
+                }
+                
+                // 这里可以添加提交贴士的逻辑，例如发送到服务器
+                console.log('Submitting tip:', {
+                    title,
+                    content,
+                    category
+                });
+                
+                // 显示提交成功提示
+                alert('贴士提交成功，感谢您的分享！');
+                
+                // 清空表单
+                document.getElementById('tip-title').value = '';
+                document.getElementById('tip-content').value = '';
+            });
+            
+            // 分页功能
+            const pageNumbers = document.querySelectorAll('.page-number');
+            const prevButton = document.querySelector('.pagination-btn:first-child');
+            const nextButton = document.querySelector('.pagination-btn:last-child');
+            const itemsPerPage = 9;
+            let currentPage = 1;
+            
+            // 显示指定页的内容
+            function showPage(page) {
+                const startIndex = (page - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                
+                tipCards.forEach((card, index) => {
+                    if (index >= startIndex && index < endIndex) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // 更新分页按钮状态
+                pageNumbers.forEach(pageNum => {
+                    if (parseInt(pageNum.textContent) === page) {
+                        pageNum.classList.add('active');
+                    } else {
+                        pageNum.classList.remove('active');
+                    }
+                });
+                
+                // 更新上一页/下一页按钮状态
+                if (prevButton) {
+                    prevButton.disabled = page === 1;
+                }
+                
+                if (nextButton) {
+                    nextButton.disabled = page === Math.ceil(tipCards.length / itemsPerPage);
+                }
+                
+                currentPage = page;
+            }
+            
+            // 初始化显示第一页
+            showPage(1);
+            
+            // 添加分页按钮点击事件
+            if (pageNumbers.length > 0) {
+                pageNumbers.forEach(pageNum => {
+                    pageNum.addEventListener('click', function() {
+                        const page = parseInt(this.textContent);
+                        showPage(page);
+                    });
+                });
+                
+                // 添加上一页/下一页按钮事件
+                if (prevButton) {
+                    prevButton.addEventListener('click', function() {
+                        if (currentPage > 1) {
+                            showPage(currentPage - 1);
+                        }
+                    });
+                }
+                
+                if (nextButton) {
+                    nextButton.addEventListener('click', function() {
+                        const totalPages = Math.ceil(tipCards.length / itemsPerPage);
+                        if (currentPage < totalPages) {
+                            showPage(currentPage + 1);
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

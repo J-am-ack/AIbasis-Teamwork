@@ -1,0 +1,9 @@
+{# 后处理模板 #}
+{% if results %}
+已找到{{ results|length }}条相关记录：
+{% for item in results %}
+{{ loop.index }}. {{ item.title }} (可信度: {{ item.score|float|round(2) }})
+{% endfor %}
+{% else %}
+未找到匹配结果
+{% endif %}

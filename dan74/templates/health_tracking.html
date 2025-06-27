@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康追踪 - 北京大学智慧食堂</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="pku-wrapper">
+        <!-- 顶部导航栏 -->
+        <nav class="pku-navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}">首页</a>
+                    <a href="{{ url_for('profile') }}">个人资料</a>
+                    <a href="{{ url_for('schedule') }}">课表导入</a>
+                    <a href="{{ url_for('health_tracking') }}" class="active">健康追踪</a>
+                </div>
+                <div class="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="page-main">
+            <div class="section-container">
+                <div class="page-header">
+                    <h1>健康追踪</h1>
+                    <p class="page-subtitle">记录并分析您的饮食习惯，帮助您实现健康目标</p>
+                </div>
+
+                <div class="health-dashboard">
+                    <!-- 健康概览 -->
+                    <div class="dashboard-section">
+                        <h2 class="section-title">健康概览</h2>
+                        
+                        <div class="health-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3>今日摄入</h3>
+                                    <p class="stat-value">1850 <span>卡路里</span></p>
+                                    <p class="stat-target">目标: 2000 卡路里</p>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 92.5%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-dumbbell"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3>蛋白质</h3>
+                                    <p class="stat-value">65 <span>克</span></p>
+                                    <p class="stat-target">目标: 75 克</p>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 86.7%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-bread-slice"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3>碳水化合物</h3>
+                                    <p class="stat-value">220 <span>克</span></p>
+                                    <p class="stat-target">目标: 250 克</p>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 88%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-oil-can"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3>脂肪</h3>
+                                    <p class="stat-value">58 <span>克</span></p>
+                                    <p class="stat-target">目标: 65 克</p>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 89.2%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 营养摄入趋势 -->
+                    <div class="dashboard-section">
+                        <h2 class="section-title">营养摄入趋势</h2>
+                        <div class="chart-container">
+                            <canvas id="nutrition-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- 记录饮食 -->
+                    <div class="dashboard-section">
+                        <h2 class="section-title">记录今日饮食</h2>
+                        <div class="meal-tracking">
+                            <div class="meal-types">
+                                <button class="meal-tab active" data-meal="breakfast">早餐</button>
+                                <button class="meal-tab" data-meal="lunch">午餐</button>
+                                <button class="meal-tab" data-meal="dinner">晚餐</button>
+                                <button class="meal-tab" data-meal="snacks">零食</button>
+                            </div>
+                            
+                            <div class="meal-form">
+                                <div class="form-group">
+                                    <label for="food-items">食物项目（每行一项）</label>
+                                    <textarea id="food-items" rows="4" placeholder="例如：馒头 2个&#10;鸡蛋 1个&#10;牛奶 200ml"></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="meal-time">用餐时间</label>
+                                    <input type="time" id="meal-time">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="meal-location">用餐地点</label>
+                                    <select id="meal-location">
+                                        <option value="">请选择</option>
+                                        <option value="农园">农园食堂</option>
+                                        <option value="燕南">燕南食堂</option>
+                                        <option value="学一">学一食堂</option>
+                                        <option value="勺园">勺园食堂</option>
+                                        <option value="家里">家里</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button id="save-meal" class="pku-btn primary-btn">保存记录</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 饮食记录 -->
+                    <div class="dashboard-section">
+                        <h2 class="section-title">最近饮食记录</h2>
+                        <div class="meal-records">
+                            <table class="records-table">
+                                <thead>
+                                    <tr>
+                                        <th>日期</th>
+                                        <th>餐次</th>
+                                        <th>食物</th>
+                                        <th>地点</th>
+                                        <th>热量</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="meal-records-body">
+                                    <tr>
+                                        <td>2023-05-15</td>
+                                        <td>早餐</td>
+                                        <td>馒头, 鸡蛋, 豆浆</td>
+                                        <td>燕南食堂</td>
+                                        <td>450 卡路里</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-05-15</td>
+                                        <td>午餐</td>
+                                        <td>米饭, 宫保鸡丁, 西红柿炒鸡蛋, 青菜</td>
+                                        <td>农园食堂</td>
+                                        <td>680 卡路里</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-05-15</td>
+                                        <td>晚餐</td>
+                                        <td>面条, 牛肉, 青菜</td>
+                                        <td>学一食堂</td>
+                                        <td>580 卡路里</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 健康建议 -->
+                    <div class="dashboard-section">
+                        <h2 class="section-title">个性化健康建议</h2>
+                        <div class="health-advice">
+                            <div class="advice-card">
+                                <div class="advice-icon">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <div class="advice-content">
+                                    <h3>饮食均衡</h3>
+                                    <p>您的碳水化合物摄入略高，建议增加蛋白质和膳食纤维的摄入。可以考虑在午餐中添加更多的蔬菜和优质蛋白质。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="advice-card">
+                                <div class="advice-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="advice-content">
+                                    <h3>用餐时间</h3>
+                                    <p>您的晚餐时间较晚，建议在晚上7点前完成晚餐，有助于消化和睡眠质量提升。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="advice-card">
+                                <div class="advice-icon">
+                                    <i class="fas fa-apple-alt"></i>
+                                </div>
+                                <div class="advice-content">
+                                    <h3>食物多样性</h3>
+                                    <p>建议增加食物种类的多样性，特别是各种颜色的蔬菜和水果，以确保获取全面的营养素。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="pku-footer">
+            <div class="footer-container">
+                <div class="footer-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>快速链接</h4>
+                        <ul>
+                            <li><a href="{{ url_for('profile') }}">个人资料</a></li>
+                            <li><a href="{{ url_for('schedule') }}">课表导入</a></li>
+                            <li><a href="{{ url_for('ai_chat') }}">AI营养师</a></li>
+                            <li><a href="{{ url_for('health_tracking') }}">健康追踪</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>相关资源</h4>
+                        <ul>
+                            <li><a href="https://www.pku.edu.cn/" target="_blank">北京大学官网</a></li>
+                            <li><a href="https://canteen.pku.edu.cn/" target="_blank">北大餐饮中心</a></li>
+                            <li><a href="https://dean.pku.edu.cn/" target="_blank">教务部</a></li>
+                            <li><a href="https://portal.pku.edu.cn/" target="_blank">北大门户</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>联系我们</h4>
+                        <ul>
+                            <li><i class="fas fa-envelope"></i> smartdining@pku.edu.cn</li>
+                            <li><i class="fas fa-phone"></i> 010-6274XXXX</li>
+                            <li><i class="fas fa-map-marker-alt"></i> 北京市海淀区颐和园路5号</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ current_year }} 北京大学智慧食堂系统 | 关注健康，享受美食</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化营养图表
+            const ctx = document.getElementById('nutrition-chart').getContext('2d');
+            const nutritionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    datasets: [
+                        {
+                            label: '热量 (卡路里)',
+                            data: [1950, 2100, 1850, 2000, 1900, 2200, 1850],
+                            borderColor: '#862633',
+                            backgroundColor: 'rgba(134, 38, 51, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: '蛋白质 (克)',
+                            data: [70, 75, 68, 72, 65, 80, 65],
+                            borderColor: '#1E3F8B',
+                            backgroundColor: 'rgba(30, 63, 139, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 0
+                        }
+                    }
+                }
+            });
+            
+            // 餐次切换
+            const mealTabs = document.querySelectorAll('.meal-tab');
+            mealTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    mealTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 这里可以添加切换餐次的逻辑
+                    const mealType = this.getAttribute('data-meal');
+                    console.log('Selected meal type:', mealType);
+                    
+                    // 根据餐次类型设置默认时间
+                    const mealTimeInput = document.getElementById('meal-time');
+                    if (mealType === 'breakfast') {
+                        mealTimeInput.value = '07:30';
+                    } else if (mealType === 'lunch') {
+                        mealTimeInput.value = '12:00';
+                    } else if (mealType === 'dinner') {
+                        mealTimeInput.value = '18:00';
+                    } else {
+                        mealTimeInput.value = '15:00';
+                    }
+                });
+            });
+            
+            // 保存餐食记录
+            const saveMealButton = document.getElementById('save-meal');
+            saveMealButton.addEventListener('click', function() {
+                const activeTab = document.querySelector('.meal-tab.active');
+                const mealType = activeTab ? activeTab.getAttribute('data-meal') : 'breakfast';
+                const foodItems = document.getElementById('food-items').value;
+                const mealTime = document.getElementById('meal-time').value;
+                const mealLocation = document.getElementById('meal-location').value;
+                
+                if (!foodItems.trim()) {
+                    alert('请输入食物项目');
+                    return;
+                }
+                
+                // 这里可以添加保存记录的逻辑，例如发送到服务器
+                console.log('Saving meal record:', {
+                    mealType,
+                    foodItems,
+                    mealTime,
+                    mealLocation
+                });
+                
+                // 显示保存成功提示
+                alert('记录已保存');
+                
+                // 清空表单
+                document.getElementById('food-items').value = '';
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -9,6 +9,8 @@ from clothes_edited import InteractiveFashionAssistant, SessionState
 
 from ui_with_image import ImageService
 
+from z_main import process_user_query
+
 class LoginDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1206,10 +1208,14 @@ class AIAgentApp(QWidget):
                 print(now_id)
                 self.show_college_shirt_image(now_id)
         else:
-            # 其他Agent的处理逻辑可以在这里添加
+            # # 其他Agent的处理逻辑可以在这里添加
+            # if self.current_agent == 2:
+            # # need add
+            #     process_user_query(message)
             
-            # need add
             
+            # else:
+                
             response = f"[{self.current_agent}] 功能开发中，暂不支持复杂交互"
             
         self.stream_output(response)

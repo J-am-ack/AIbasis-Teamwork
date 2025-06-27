@@ -1,0 +1,87 @@
+{#
+    北京大学校园体育意图识别系统
+    严格从以下7类意图中选择（禁止自行添加其他类型）：
+#}
+{% set intent_definitions = {
+    "facility_query": {
+        "desc": "体育场馆查询（开放时间、预约方式、场地信息等）",
+        "keywords": ["五四", "邱德拔", "预约", "开放", "场地", "关门时间"],
+        "examples": ["邱德拔游泳池开放时间", "怎么预约五四篮球场"]
+    },
+    "event_query": {
+        "desc": "体育活动/赛事查询",
+        "keywords": ["比赛", "运动会", "社团", "赛事", "活动"],
+        "examples": ["新生杯篮球赛赛程", "羽毛球社团招新"]
+    },
+    "course_info": {
+        "desc": "体育课程相关信息",
+        "keywords": ["课表", "选课", "老师", "考试", "学分", "上课地点"],
+        "examples": ["游泳课考试标准", "太极拳课在哪个教室"]
+    },
+    "physical_test": {
+        "desc": "体质测试相关问题",
+        "keywords": ["体测", "12分钟跑", "BMI", "及格线", "免测"],
+        "examples": ["体测不及格怎么办", "12分钟跑评分标准"]
+    },
+    "health_advice": {
+        "desc": "运动健康建议",
+        "keywords": ["受伤", "锻炼", "康复", "饮食", "计划"],
+        "examples": ["跑步膝盖疼怎么办", "增肌饮食建议"]
+    },
+    "extra_exercise": {
+        "desc": "课外锻炼要求",
+        "keywords": ["乐动力", "85公里", "课外锻炼", "PKU Runner", "跑步"],
+        "examples": ["乐动力怎么记录跑步", "85公里截止日期"]
+    },
+    "feedback": {
+        "desc": "投诉建议反馈",
+        "keywords": ["投诉", "建议", "态度差", "反映", "投诉"],
+        "examples": ["投诉邱德拔工作人员态度", "更衣室卫生建议"]
+    }
+} %}
+
+{#
+    ======================
+    核心识别规则（优先级从高到低）：
+    1. 含投诉类关键词 → 强制归类feedback
+    2. 含课外锻炼关键词 → 强制归类extra_exercise 
+    3. 含课程教学关键词 → 强制归类course_info
+    4. 其他情况综合判断
+    5. 无体育相关性 → unrecognized_intent
+    ======================
+#}
+
+{
+    "system_role": "专业校园体育意图分类器（严格遵循规则）",
+    "current_date": "{{ current_date }}",
+    "user_query": "{{ user_query }}",
+    "strict_rules": [
+        "规则1：出现[投诉/建议/反映]等词 → 必须归类feedback（优先级最高）",
+        "规则2：出现[85km/乐动力/PKU Runner] → 必须归类extra_exercise",
+        "规则3：出现[课表/选课/学分/上课] → 必须归类course_info",
+        "规则4：'在哪上'需结合上下文：前面是课程名→course_info，纯场馆名→facility_query",
+        "规则5：无体育相关性 → unrecognized_intent"
+    ],
+    "intent_definitions": {{ intent_definitions|tojson }},
+    "examples": [
+        {"query": "投诉邱德拔更衣室卫生", "intent": "feedback", "reason": "含投诉关键词"},
+        {"query": "乐动力记录异常", "intent": "extra_exercise", "reason": "含乐动力关键词"}, 
+        {"query": "游泳课在哪上", "intent": "course_info", "reason": "'课'关键词+地点询问"},
+        {"query": "邱德拔在哪", "intent": "facility_query", "reason": "纯场馆位置查询"},
+        {"query": "今天吃什么", "intent": "unrecognized_intent", "reason": "无体育相关性"}
+    ]
+}
+
+{# 输出要求 #}
+请严格按此JSON格式响应（包含confidence和reason字段）：
+```json
+{
+    "intent": "最匹配的意图类型",
+    "entities": {
+        "keywords_found": ["检测到的关键词"],
+        "other_entities": {}
+    },
+    "confidence": 0.95,
+    "reason": "应用规则1：检测到[投诉]关键词",
+    "context": {}
+}

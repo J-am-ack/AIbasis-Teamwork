@@ -8,6 +8,8 @@ venv/
 
 *.json
 
+.env.development
+
 # 其他敏感文件
 config.json
 secrets/

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI营养师 - 北京大学智慧食堂</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* AI聊天页面特定样式 */
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            min-height: 500px;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #9e1b32 0%, #1e3a8a 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .chat-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chat-header h2 i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+        }
+        
+        .chat-status {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f5f7fb;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message-content {
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 5px;
+            margin-left: 12px;
+        }
+        
+        .user-message {
+            margin-left: auto;
+        }
+        
+        .user-message .message-content {
+            background: #1e3a8a;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            margin-right: auto;
+            display: flex;
+        }
+        
+        .bot-avatar {
+            width: 35px;
+            height: 35px;
+            background: #9e1b32;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .bot-message .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .chat-input {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        .input-container {
+            display: flex;
+            position: relative;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input input:focus {
+            border-color: #9e1b32;
+            box-shadow: 0 0 0 2px rgba(158, 27, 50, 0.2);
+        }
+        
+        .send-button {
+            background: linear-gradient(135deg, #9e1b32 0%, #1e3a8a 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .send-button i {
+            font-size: 1.2rem;
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .suggestion-chip {
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 16px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-chip:hover {
+            background: #e4e6eb;
+            border-color: #ccc;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            width: fit-content;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #9e1b32;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            opacity: 0.6;
+        }
+        
+        .typing-indicator span:nth-child(1) {
+            animation: bounce 1.2s infinite 0.1s;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation: bounce 1.2s infinite 0.3s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation: bounce 1.2s infinite 0.5s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .food-info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .food-info-card h4 {
+            margin-top: 0;
+            color: #9e1b32;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .canteen-tag {
+            display: inline-block;
+            background: #1e3a8a;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .feature-tag {
+            display: inline-block;
+            background: #f0f2f5;
+            color: #333;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        /* 页面特定响应式调整 */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: calc(100vh - 180px);
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pku-wrapper">
+        <!-- 顶部导航栏 -->
+        <nav class="pku-navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                <div class="nav-links">
+                    <a href="{{ url_for('index') }}">首页</a>
+                    <a href="{{ url_for('profile') }}">个人资料</a>
+                    <a href="{{ url_for('schedule') }}">课表导入</a>
+                    <a href="{{ url_for('ai_chat') }}" class="active">AI营养师</a>
+                    <a href="{{ url_for('health_tracking') }}">健康追踪</a>
+                    <a href="{{ url_for('health_tips') }}">健康贴士</a>
+                </div>
+                <div class="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="page-main">
+            <div class="section-container">
+                <div class="section-header">
+                    <h1>AI营养师</h1>
+                    <p>您的个人饮食健康顾问，随时为您提供专业的营养建议和食堂推荐</p>
+                </div>
+                
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2><i class="fas fa-robot"></i> 北大营养师</h2>
+                        <div class="chat-status">
+                            <div class="status-indicator"></div>
+                            <span>在线</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- 机器人欢迎消息 -->
+                        <div class="message bot-message">
+                            <div class="bot-avatar">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div>
+                                <div class="message-content">
+                                    您好！我是北大智慧食堂的AI营养师，可以为您提供饮食建议、食堂推荐和营养知识。有什么可以帮助您的吗？
+                                </div>
+                                <div class="message-time">今天 {{ now }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <div class="input-container">
+                            <input type="text" id="userInput" placeholder="请输入您的问题..." autocomplete="off">
+                            <button class="send-button" id="sendButton">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="suggestions">
+                            <div class="suggestion-chip" onclick="suggestQuestion(this)">早餐去哪个食堂比较好？</div>
+                            <div class="suggestion-chip" onclick="suggestQuestion(this)">推荐一些健康的午餐选择</div>
+                            <div class="suggestion-chip" onclick="suggestQuestion(this)">燕南食堂有什么特色菜？</div>
+                            <div class="suggestion-chip" onclick="suggestQuestion(this)">如何保持健康饮食习惯？</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="pku-footer">
+            <div class="footer-container">
+                <div class="footer-logo">
+                    <span>北京大学智慧食堂</span>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>快速链接</h4>
+                        <ul>
+                            <li><a href="{{ url_for('index') }}">首页</a></li>
+                            <li><a href="{{ url_for('profile') }}">个人资料</a></li>
+                            <li><a href="{{ url_for('schedule') }}">课表导入</a></li>
+                            <li><a href="{{ url_for('health_tracking') }}">健康追踪</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>相关资源</h4>
+                        <ul>
+                            <li><a href="https://www.pku.edu.cn/" target="_blank">北京大学官网</a></li>
+                            <li><a href="https://canteen.pku.edu.cn/" target="_blank">北大餐饮中心</a></li>
+                            <li><a href="https://dean.pku.edu.cn/" target="_blank">教务部</a></li>
+                            <li><a href="https://portal.pku.edu.cn/" target="_blank">北大门户</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>联系我们</h4>
+                        <ul>
+                            <li><i class="fas fa-envelope"></i> smartdining@pku.edu.cn</li>
+                            <li><i class="fas fa-phone"></i> 010-6274XXXX</li>
+                            <li><i class="fas fa-map-marker-alt"></i> 北京市海淀区颐和园路5号</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ current_year }} 北京大学智慧食堂系统 | 关注健康，享受美食</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // 获取当前时间
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+        
+        // 添加消息到聊天窗口
+        function addMessage(content, isUser = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            const currentTime = getCurrentTime();
+            
+            if (isUser) {
+                messageDiv.innerHTML = `
+                    <div>
+                        <div class="message-content">${content}</div>
+                        <div class="message-time">今天 ${currentTime}</div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="bot-avatar">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div>
+                        <div class="message-content">${content}</div>
+                        <div class="message-time">今天 ${currentTime}</div>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // 显示正在输入指示器
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot-message';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="bot-avatar">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // 隐藏正在输入指示器
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        // 发送消息到后端
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+            
+            if (message === '') return;
+            
+            // 添加用户消息到聊天窗口
+            addMessage(message, true);
+            
+            // 清空输入框
+            userInput.value = '';
+            
+            // 显示正在输入指示器
+            showTypingIndicator();
+            
+            // 发送请求到后端
+            fetch('/ai_assistant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 隐藏正在输入指示器
+                hideTypingIndicator();
+                
+                // 添加机器人回复
+                if (data.status === 'success') {
+                    // 处理回复中的食堂信息，增强显示效果
+                    let formattedAnswer = data.answer;
+                    
+                    // 检测是否包含食堂信息，如果包含则添加特殊样式
+                    const canteenNames = ['学一食堂', '农园食堂', '燕南食堂', '艺园食堂', '松林快餐', '勺园食堂', '佟园食堂', '学五食堂'];
+                    
+                    canteenNames.forEach(name => {
+                        const regex = new RegExp(name, 'g');
+                        formattedAnswer = formattedAnswer.replace(regex, `<span class="canteen-tag">${name}</span>`);
+                    });
+                    
+                    // 添加营养素高亮
+                    const nutrients = ['蛋白质', '碳水化合物', '脂肪', '维生素', '膳食纤维', '钙', '铁', '锌'];
+                    nutrients.forEach(nutrient => {
+                        const regex = new RegExp(nutrient, 'g');
+                        formattedAnswer = formattedAnswer.replace(regex, `<span class="feature-tag">${nutrient}</span>`);
+                    });
+                    
+                    addMessage(formattedAnswer);
+                } else {
+                    addMessage('抱歉，我无法回答您的问题。请稍后再试。');
+                }
+            })
+            .catch(error => {
+                hideTypingIndicator();
+                addMessage('连接服务器时出错，请稍后再试。');
+                console.error('Error:', error);
+            });
+        }
+        
+        // 使用建议问题
+        function suggestQuestion(element) {
+            document.getElementById('userInput').value = element.textContent;
+        }
+        
+        // 事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            const sendButton = document.getElementById('sendButton');
+            const userInput = document.getElementById('userInput');
+            
+            sendButton.addEventListener('click', sendMessage);
+            
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
